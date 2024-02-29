@@ -71,7 +71,8 @@ const form = useForm({
     coupon_type: props.order?.coupon_type,
     discount: props.order.discount,
     products: props.order.products,
-    deleteProductId: []
+    deleteProductId: [],
+    search: ''
 })
 
 const onHanldeChange = async (e) => {
