@@ -14,6 +14,7 @@ const props = defineProps({
     post: Object
 })
 const previewThumbnailUrl = ref('')
+const toastId = ref('');
 
 const form = useForm({
     id: props.post.id,
@@ -21,15 +22,6 @@ const form = useForm({
     thumbnail: props.post.thumbnail,
     content: props.post.content,
 });
-
-const submit = () => {
-    form.post(route('admin.post.update'), {
-        onSuccess: () => {
-            router.reload({ only: ['post'] })
-            toast.success('Cập nhật thành công!');
-        }
-    });
-};
 
 const handleChangeThumbnail = (e) => {
     const file = e.target.files[0];
@@ -52,13 +44,23 @@ function filePicker(callback, value, meta) {
     });
 }
 
+const submit = () => {
+    form.post(route('admin.post.update'), {
+        onSuccess: () => {
+            router.reload({ only: ['post'] })
+            toast.remove(toastId.value)
+            toast.success('Cập nhật thành công!');
+        },
+        onProgress: () => toastId.value = toast.loading('Loading...'),
+    });
+};
 </script>
 
 <template>
-    <Head title="Thêm bộ sưu tập" />
+    <Head title="Cập nhật bài viết" />
     <AuthenticatedLayout>
         <div>
-            <p class="px-5 dark:text-white text-2xl">Thêm bài viết</p>
+            <p class="px-5 dark:text-white text-2xl">Cập nhật bài viết #{{props.post.id}}</p>
         </div>
         <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
             <form @submit.prevent="submit" class="max-w-5xl mx-auto">

@@ -1,6 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 </script>
+
 <template>
     <div>
         <ul class="space-y-2 font-medium">
@@ -39,14 +40,12 @@ import { Link } from '@inertiajs/vue3';
                     <li>
                         <Link :href="route('admin.post.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                        Thêm
-                        bài viết</Link>
+                        Thêm bài viết</Link>
                     </li>
                     <li>
                         <Link :href="route('admin.post.list')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                        Danh
-                        sách bài viết</Link>
+                        Danh sách bài viết</Link>
                     </li>
                 </ul>
             </li>
@@ -142,6 +141,38 @@ import { Link } from '@inertiajs/vue3';
             <li>
                 <button type="button"
                     class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    aria-controls="dropdown-example" data-collapse-toggle="dropdown-coupon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m9 14.25 6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185ZM9.75 9h.008v.008H9.75V9Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008V13.5Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                    </svg>
+
+                    <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Mã giảm giá</span>
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 4 4 4-4" />
+                    </svg>
+                </button>
+                <ul id="dropdown-coupon" class="hidden py-2 space-y-2">
+                    <li>
+                        <Link :href="route('admin.coupon.add.view')"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        Thêm mã giảm giá</Link>
+                    </li>
+                    <li>
+                        <Link :href="route('admin.coupon.list')"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        Danh sách mã giảm giá</Link>
+                    </li>
+                </ul>
+            </li>
+
+
+            <li>
+                <button type="button"
+                    class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                     aria-controls="dropdown-example" data-collapse-toggle="dropdown-product">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6">
@@ -167,11 +198,6 @@ import { Link } from '@inertiajs/vue3';
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                         Danh sách sản phẩm</Link>
                     </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Danh
-                            sách sản phẩm có khuyến mãi</a>
-                    </li>
                 </ul>
             </li>
 
@@ -193,11 +219,11 @@ import { Link } from '@inertiajs/vue3';
                     </svg>
                 </button>
                 <ul id="dropdown-order" class="hidden py-2 space-y-2">
-                    <li>
+                    <!-- <li>
                         <Link :href="route('admin.product.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                         Thêm đơn đặt hàng</Link>
-                    </li>
+                    </li> -->
                     <li>
                         <Link :href="route('admin.order.list')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -227,14 +253,49 @@ import { Link } from '@inertiajs/vue3';
                     <li>
                         <Link :href="route('admin.user.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                        Thêm
-                        thành viên</Link>
+                        Thêm thành viên</Link>
                     </li>
                     <li>
                         <Link :href="route('admin.user.list')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                        Danh
-                        sách thành viên</Link>
+                        Danh sách thành viên</Link>
+                    </li>
+                    <li>
+                        <Link :href="route('admin.customer.list')"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        Danh sách khách hàng</Link>
+
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <button type="button"
+                    class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    aria-controls="dropdown-example" data-collapse-toggle="dropdown-permission">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+
+                    <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Phân quyền</span>
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 4 4 4-4" />
+                    </svg>
+                </button>
+                <ul id="dropdown-permission" class="hidden py-2 space-y-2">
+                    <li>
+                        <Link :href="route('admin.role.add.view')"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        Thêm vai trò</Link>
+                    </li>
+                    <li>
+                        <Link :href="route('admin.role.list')"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        Danh sách vai trò</Link>
                     </li>
                 </ul>
             </li>

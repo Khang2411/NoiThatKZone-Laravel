@@ -14,6 +14,7 @@ defineProps({
 })
 const previewThumbnailUrl = ref('')
 const previewBannerUrl = ref('')
+const toastId = ref('');
 
 const form = useForm({
     name: '',
@@ -21,12 +22,6 @@ const form = useForm({
     thumbnail: '',
     banner: '',
 });
-
-const submit = () => {
-    form.post(route('admin.category.store'), {
-        onSuccess: () => toast.success('Thêm thành công!')
-    });
-};
 
 const previewThumbnail = (e) => {
     const file = e.target.files[0];
@@ -37,10 +32,20 @@ const previewBanner = (e) => {
     previewBannerUrl.value = URL.createObjectURL(file);
 }
 
+const submit = () => {
+    form.post(route('admin.category.store'), {
+        onProgress: () => toastId.value = toast.loading('Loading...'),
+        onSuccess: () => {
+            toast.remove(toastId.value)
+            toast.success('Thêm thành công!')
+        }
+    });
+}
 </script>
 
 <template>
-    <Head title="Product" />
+
+    <Head title="Thêm thể loại" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Thêm Thể loại</p>
@@ -51,7 +56,7 @@ const previewBanner = (e) => {
                     <InputLabel for="name" value="Tên thể loại" />
                     <TextInput type="text"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        v-model="form.name" autocomplete="name" />
+                        v-model="form.name" />
                     <InputError class="mt-2" :message="form.errors.name" />
                 </div>
 

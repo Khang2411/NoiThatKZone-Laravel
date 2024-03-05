@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Collection;
- 
+
 class AdminOrderController extends Controller
 {
     function list()
@@ -81,13 +81,15 @@ class AdminOrderController extends Controller
     function edit()
     {
         $total = 0;
+
         $order = Order::find(request()->order);
         $order['products'] = $order->products;
         $order['city'] = $order->city;
         $order['district'] = $order->district;
         $order['ward'] = $order->ward;
         $order['user'] = $order->user;
-
+        $order['subtotal'] = 0;
+        $order['total'] = 0;
         foreach ($order->products as $product) {
             $total = $total + $product->pivot->price * $product->pivot->quantity;
             $order['subtotal'] = $total;
@@ -104,9 +106,9 @@ class AdminOrderController extends Controller
         $products = Product::when(request()->search, function ($q) {
             return $q->where('products.name', 'LIKE', '%' . request()->search . '%');
         })->orderBy("id", "DESC")->paginate(10);
-        $products->appends(['order' => request()->order]);
+        $products->appends(['order' => request()->order, 'search' => request()->search]);
         //return $products;
-        if(request()->wantsJson()){
+        if (request()->wantsJson()) {
             return collect($products);
         }
         return Inertia::render('Order/OrderEdit', ['order' => $order, 'cities' => $cities, 'districts' => $districts, 'wards' => $wards, 'coupons' => $coupons, 'products' => $products]);
@@ -139,10 +141,13 @@ class AdminOrderController extends Controller
         $order = Order::find(request()->id);
         foreach (request()->products as $product) {
             //return $product['pivot'];
-            $order->products()->updateExistingPivot($product['id'], ['quantity' => $product['pivot']['quantity']]);
+            $order->products()->syncWithoutDetaching([
+                $product['id'] => ['quantity' => $product['pivot']['quantity'], 'price' => $product['pivot']['price']]
+            ]);
         }
 
         $order->products()->detach(request()->deleteProductId);
+        $order->phone = request()->phone;
         $order->status = request()->status;
         $order->ship_address = request()->ship_address;
         $order->city_id = request()->city_id;
@@ -152,5 +157,10 @@ class AdminOrderController extends Controller
         $order->discount = request()->discount;
         $order->save();
         return redirect()->route('admin.order.list');
+    }
+    
+    function delete($id)
+    {
+        Order::destroy($id);
     }
 }

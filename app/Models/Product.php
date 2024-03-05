@@ -12,7 +12,7 @@ class Product extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['slug', 'name', 'describe','price', 'price_before_discount','thumbnail','is_featured','is_hot','collection_id'];
+    protected $fillable = ['slug', 'name', 'describe', 'price', 'price_before_discount', 'thumbnail', 'is_featured', 'is_hot', 'collection_id', 'public_id_thumbnail'];
 
     public function collection(): BelongsTo
     {

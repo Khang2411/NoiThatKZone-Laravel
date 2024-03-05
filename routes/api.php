@@ -120,7 +120,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/home/best-seller', function () {
         $products['list_best_seller'] = Product::where('is_hot', '1')->get();
-        $products['list_featured_office'] = Product::where('is_featured', '1')->whereIn('collection_id', [7, 8, 9])->get();
+        $products['list_featured_office'] = Product::where('is_featured', '1')->get();
         return response()->json(['data' => $products]);
     })->name('api-home.getBestSeller');
 

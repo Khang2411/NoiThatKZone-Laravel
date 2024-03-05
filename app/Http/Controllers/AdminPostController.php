@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminPostController extends Controller
 {
@@ -35,6 +36,7 @@ class AdminPostController extends Controller
         foreach ($posts as $post) {
             $post['content'] = Str::limit($post['content'], 150, '...');
         };
+
         //return $posts;
         return Inertia::render('Post/PostList', ['posts' => $posts, 'list_action' => $list_action, 'count' => $count]);
     }
@@ -63,12 +65,13 @@ class AdminPostController extends Controller
         )->validate();
 
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = Str::replace('.', '', microtime() . md5(Str::random(10))) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/posts', $name);
-            $urlThumbnail = '/storage/posts/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/posts',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
 
         $input['slug'] = Str::slug($input['title']); // vẫn thêm slug vô dc mảng input dù view kh có name 
@@ -78,30 +81,7 @@ class AdminPostController extends Controller
 
         return to_route('admin.post.list');
     }
-    function action()
-    {
-        $list_check = request()->list_check;
-        if (!$list_check) {
-            return redirect()->back()->with(['status' => 'Bạn cần chọn phần tử để thực hiện']);
-        } else {
-            switch (request()->action) {
-                case 'delete':
-                    Post::destroy($list_check);
-                    return redirect()->back()->with(['status' => 'Xóa thành công']);
-                    break;
-                case 'restore':
-                    Post::whereIn('id', $list_check)->restore();
-                    return redirect()->back()->with(['status' => 'Khôi phục thành công']);
-                    break;
-                case 'force_delete':
-                    Post::withTrashed()->whereIn('id', $list_check)->forceDelete();
-                    return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
-                    break;
-                default:
-                    return redirect()->back()->with(['status' => 'Chưa chọn tác vụ nào']);
-            }
-        }
-    }
+
     function edit($id)
     {
         $post = Post::find($id);
@@ -127,16 +107,55 @@ class AdminPostController extends Controller
         $post = Post::find(request()->id);
         $post->title = request()->title;
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = Str::replace('.', '', microtime() . md5(Str::random(10))) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/posts', $name);
-            $urlThumbnail = '/storage/posts/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/posts',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            if ($post->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($post->public_id_thumbnail);
+            }
             $post->thumbnail =  $input['thumbnail'];
+            $post->public_id_thumbnail = $thumbnail['public_id'];
         }
         $post->content = request()->content;
         $post->save();
         return redirect()->route('admin.post.list');
+    }
+
+    function delete($id)
+    {
+        Post::destroy($id);
+    }
+
+    function action()
+    {
+        $list_check = request()->list_check;
+        if (!$list_check) {
+            return redirect()->back()->with(['status' => 'Bạn cần chọn phần tử để thực hiện']);
+        } else {
+            switch (request()->action) {
+                case 'delete':
+                    Post::destroy($list_check);
+                    return redirect()->back()->with(['status' => 'Xóa thành công']);
+                    break;
+                case 'restore':
+                    Post::whereIn('id', $list_check)->restore();
+                    return redirect()->back()->with(['status' => 'Khôi phục thành công']);
+                    break;
+                case 'force_delete':
+                    $posts = Post::withTrashed()->whereIn('id', $list_check);
+                    foreach ($posts->get() as $post) {
+                        if ($post->public_id_thumbnail !== null) {
+                            (new UploadApi())->destroy($post->public_id_thumbnail);
+                        }
+                    }
+                    $posts->forceDelete();
+                    return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
+                    break;
+                default:
+                    return redirect()->back()->with(['status' => 'Chưa chọn tác vụ nào']);
+            }
+        }
     }
 }

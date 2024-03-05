@@ -30,8 +30,8 @@ const form = useForm({
     password_confirmation: '',
     role_id: '',
     phone: '',
-    search: new URLSearchParams(window.location.search).get('search'),
     list_check: [],
+    search: new URLSearchParams(window.location.search).get('search'),
     all_selected: false
 });
 
@@ -65,7 +65,7 @@ const handleSearch = debounce((e) => {
 
 const handleAction = (action) => {
     console.log(action)
-    router.post(route('admin.user.action'), {
+    router.post(route('admin.customer.action'), {
         action: action,
         list_check: form.list_check
     }, {
@@ -80,7 +80,7 @@ const handleAction = (action) => {
 
 const handleRemove = (id) => {
     if (confirm("Bạn có muốn xóa?")) {
-        router.post(route('admin.user.delete', id), {
+        router.post(route('admin.customer.delete', id), {
         }, {
             onSuccess: () => {
                 router.reload({ only: ['users,count'] })
@@ -90,7 +90,7 @@ const handleRemove = (id) => {
 }
 
 const submit = () => {
-    form.post(route('admin.user.update'), {
+    form.post(route('admin.customer.update'), {
         onSuccess: () => {
             router.reload({ only: ['users'] })
             toast.remove(toastId.value)
@@ -102,11 +102,12 @@ const submit = () => {
         onProgress: () => toastId.value = toast.loading('Loading...'),
     });
 };
+
 </script>
 
 <template>
 
-    <Head title="Danh sách thành viên" />
+    <Head title="Danh sách khách hàng" />
     <AuthenticatedLayout>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"

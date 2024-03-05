@@ -1,16 +1,20 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 defineProps({
     roles: Object
 })
+
+const toastId = ref('');
+
 const form = useForm({
     name: '',
     email: '',
@@ -20,16 +24,19 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('admin.user.store'),{
+    form.post(route('admin.user.store'), {
+        onProgress: () => toastId.value = toast.loading('Loading...'),
         onSuccess: () => {
-            toast.success('Thêm thành công!');
+            toast.remove(toastId.value)
+            toast.success('Thêm thành công!')
         }
     });
 };
 </script>
 
 <template>
-    <Head title="Thêm bộ sưu tập" />
+
+    <Head title="Thêm bộ thành viên" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Thêm thành viên</p>
@@ -39,7 +46,8 @@ const submit = () => {
                 <div>
                     <InputLabel for="name" value="Name" />
 
-                    <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" autocomplete="name" />
+                    <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name"
+                        autocomplete="name" />
 
                     <InputError class="mt-2" :message="form.errors.name" />
                 </div>

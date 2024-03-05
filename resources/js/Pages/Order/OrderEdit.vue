@@ -7,6 +7,7 @@ import Observer from '@/Components/order/Observer.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
+import { debounce } from 'lodash';
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
@@ -27,16 +28,7 @@ const total = ref(props.order.total)
 const couponCode = ref()
 const discount = ref()
 const couponType = ref()
-
-const getItems = async () => {
-    axios.get(props.products.next_page_url).then((response) => {
-        console.log(response.data)
-
-        props.products.data = [...props.products.data, ...response.data.data]
-
-        props.products.next_page_url = response.data.next_page_url
-    })
-}
+const toastId = ref('');
 
 const listStatus = [{
     id: 'completed',
@@ -74,6 +66,22 @@ const form = useForm({
     deleteProductId: [],
     search: ''
 })
+
+const getItems = async () => {
+    const getProducts = await axios.get(props.products.next_page_url)
+    props.products.data = [...props.products.data, ...getProducts.data.data]
+    props.products.next_page_url = getProducts.data.next_page_url
+}
+
+const handleSearch = debounce(async (e) => {
+    const getProducts = await axios.get(props.products.first_page_url, {
+        params: {
+            search: e.target.value
+        }
+    })
+    props.products.data = getProducts.data.data
+    props.products.next_page_url = getProducts.data.next_page_url
+}, 500)
 
 const onHanldeChange = async (e) => {
     console.log(e.target.value)
@@ -140,6 +148,7 @@ const handleIncrement = (id) => {
 }
 
 const handleAddProduct = (product) => {
+    console.log(props.order.subtotal)
     product['pivot'] = { price: product.price, quantity: 1 }
     console.log(props.order)
     form.products = [...form.products, product]
@@ -182,17 +191,18 @@ const submit = () => {
     form.post(route('admin.order.update'), {
         onSuccess: () => {
             router.reload({ only: ['order'] })
+            toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
-        }
+        },
+        onProgress: () => toastId.value = toast.loading('Loading...'),
     });
 };
-
 </script>
 
 <template>
     <div>
 
-        <Head title="Thêm bộ sưu tập" />
+        <Head title="Cập nhật đơn đặt hàng" />
         <AuthenticatedLayout>
             <div>
                 <p class="px-5 dark:text-white text-2xl">Cập nhật đơn đặt hàng</p>
@@ -319,8 +329,8 @@ const submit = () => {
                                         </th>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency', currency: 'VND'
-                                            }).format(product.pivot.quantity * product.pivot.price) }}
+                    style: 'currency', currency: 'VND'
+                }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex gap-2">
@@ -341,9 +351,9 @@ const submit = () => {
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency', currency:
-                                                    'VND'
-                                            }).format(product.pivot.quantity * product.pivot.price) }}
+                    style: 'currency', currency:
+                        'VND'
+                }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -360,21 +370,21 @@ const submit = () => {
                         <div class="text-right p-3 dark:text-white">
                             <div>
                                 Tạm tính: {{ new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency', currency:
-                                        'VND'
-                                }).format(subtotal) }}
+                    style: 'currency', currency:
+                        'VND'
+                }).format(subtotal) }}
                             </div>
                             <div>
                                 Mã Coupon: {{ form.coupon_code ? form.coupon_code : 'Không có' }}
                                 {{ form.discount && (form.discount <= 100 ? `(${form.discount}%)` : `(${new
-                                    Intl.NumberFormat('vi-VN', {
-                                        style: 'currency', currency: 'VND'
-                                    }).format(form.discount)})`) }} </div>
+                    Intl.NumberFormat('vi-VN', {
+                        style: 'currency', currency: 'VND'
+                    }).format(form.discount)})`) }} </div>
                                     <div>
                                         Tổng tiền: {{ new Intl.NumberFormat('vi-VN', {
-                                            style: 'currency', currency:
-                                                'VND'
-                                        }).format(total) }}
+                    style: 'currency', currency:
+                        'VND'
+                }).format(total) }}
                                     </div>
 
                                     <button type="button" data-modal-target="addProduct" data-modal-show="addProduct"
@@ -383,7 +393,8 @@ const submit = () => {
                                         Thêm sản phẩm
                                     </button>
 
-                                    <button type="button" data-modal-target="editUserModal" data-modal-show="editUserModal"
+                                    <button type="button" data-modal-target="editUserModal"
+                                        data-modal-show="editUserModal"
                                         class="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none 
                                     focus:ring-gray-300 font-medium rounded-lg text-xs mt-2 px-2 py-2   dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800">
                                         Chọn coupon
@@ -404,7 +415,8 @@ const submit = () => {
                     class="fixed top-0 left-0 right-0 z-50 items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
                     <div class="relative w-full max-w-2xl max-h-full">
                         <!-- Modal content -->
-                        <form @submit.prevent="submitCoupon" class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <form @submit.prevent="submitCoupon"
+                            class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                             <!-- Modal header -->
                             <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -413,8 +425,8 @@ const submit = () => {
                                 <button type="button"
                                     class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-hide="addProduct">
-                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 14 14">
+                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 14 14">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                             stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                     </svg>
@@ -429,8 +441,9 @@ const submit = () => {
                                             class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                             </svg>
                                         </div>
                                         <TextInput type="text"
@@ -440,16 +453,17 @@ const submit = () => {
                                     </div>
                                     <div class="mt-5">
                                         <div v-for="(product, index) in products.data" :key="index"
-                                            class="flex gap-5 mb-5 p-5 shadow-lg border border-[#454c59] justify-between">
+                                            class="flex mb-5 p-5 shadow-lg border border-[#454c59] gap-5">
                                             <div>
                                                 <img class="w-14 h-14" :src=product.thumbnail alt="product" />
                                             </div>
-                                            <div class="dark:text-white">
+                                            <div class="dark:text-white flex-1">
                                                 <div>{{ product.name }}</div>
-                                                <div class="text-[#d0021c] font-bold"> {{ new Intl.NumberFormat('vi-VN', {
-                                                    style: 'currency', currency:
-                                                        'VND'
-                                                }).format(product.price) }}</div>
+                                                <div class="text-[#d0021c] font-bold"> {{ new Intl.NumberFormat('vi-VN',
+                    {
+                        style: 'currency', currency:
+                            'VND'
+                    }).format(product.price) }}</div>
                                             </div>
 
                                             <div>
@@ -474,7 +488,8 @@ const submit = () => {
                     class="fixed top-0 left-0 right-0 z-50 items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
                     <div class="relative w-full max-w-2xl max-h-full">
                         <!-- Modal content -->
-                        <form @submit.prevent="submitCoupon" class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <form @submit.prevent="submitCoupon"
+                            class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                             <!-- Modal header -->
                             <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -483,8 +498,8 @@ const submit = () => {
                                 <button type="button"
                                     class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-hide="editUserModal">
-                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 14 14">
+                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 14 14">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                             stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                     </svg>

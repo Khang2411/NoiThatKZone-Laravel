@@ -12,6 +12,7 @@ import 'vue3-toastify/dist/index.css';
 
 const previewUrl = ref('')
 const previewMultipleUrl = ref([])
+const toastId = ref('');
 
 defineProps({
     collections: Object
@@ -29,15 +30,11 @@ const form = useForm({
     is_hot: false,
 });
 
-const submit = () => {
-    form.post(route('admin.product.store'), {
-        onSuccess: () => toast.success('Thêm thành công!')
-    });
-};
 const handleThumbnail = (e) => {
     const file = e.target.files[0];
     previewUrl.value = URL.createObjectURL(file);
 }
+
 const handleDetailImages = (e) => {
     const selectedFiles = [];
     const targetFiles = e.target.files;
@@ -48,10 +45,36 @@ const handleDetailImages = (e) => {
     previewMultipleUrl.value = selectedFiles
 }
 
+function filePicker(callback, value, meta) {
+    var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
+    var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+
+    var cmsURL = 'http://127.0.0.1:8000/' + 'laravel-filemanager?editor=' + meta.fieldname;
+    if (meta.filetype == 'image') {
+        cmsURL = cmsURL + '&type=Images';
+    } else { cmsURL = cmsURL + '&type=Files'; }
+    tinyMCE.activeEditor.windowManager.openUrl({
+        url: cmsURL, title: 'Filemanager', width: x *
+            0.8, height: y * 0.8, resizable: 'yes', close_previous: 'no', onMessage: (api, message) => {
+                callback(message.content);
+            }
+    });
+}
+
+const submit = () => {
+    form.post(route('admin.product.store'), {
+        onProgress: () => toastId.value = toast.loading('Loading...'),
+        onSuccess: () => {
+            toast.remove(toastId.value)
+            toast.success('Thêm thành công!')
+        }
+    });
+};
 </script>
 
 <template>
-    <Head title="Product" />
+
+    <Head title="Thêm sản phẩm" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Thêm Sản Phẩm</p>
@@ -68,8 +91,8 @@ const handleDetailImages = (e) => {
                 <li class="me-2" role="presentation">
                     <button
                         class="inline-flex items-center px-4 py-3 rounded-lg hover:text-gray-900 bg-gray-50 hover:bg-gray-100 w-full dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-white"
-                        id="dashboard-tab" data-tabs-target="#dashboard" type="button" role="tab" aria-controls="dashboard"
-                        aria-selected="false">Ảnh sản phẩm</button>
+                        id="dashboard-tab" data-tabs-target="#dashboard" type="button" role="tab"
+                        aria-controls="dashboard" aria-selected="false">Ảnh sản phẩm</button>
                 </li>
                 <li class="me-2" role="presentation">
                     <button
@@ -96,8 +119,7 @@ const handleDetailImages = (e) => {
                                 </div>
                                 <div class="flex flex-wrap items-center">
                                     <InputLabel for="name" value="Tên sản phẩm" class="w-1/6" />
-                                    <TextInput type="text" class="mt-1 block w-6/12" v-model="form.name"
-                                        autocomplete="name" />
+                                    <TextInput type="text" class="mt-1 block w-6/12" v-model="form.name" />
                                 </div>
                                 <InputError class="mt-2" :message="form.errors.name" />
                                 <div>
@@ -130,8 +152,8 @@ const handleDetailImages = (e) => {
                                     <div class="mt-3">
                                         <div class="flex flex-wrap items-center">
                                             <InputLabel for="promotion_price" value="Giá khuyến mãi" class="w-1/6" />
-                                            <TextInput type="text" class="mt-1 block w-6/12" v-model="form.promotion_price"
-                                                autocomplete="promotion_price" />
+                                            <TextInput type="text" class="mt-1 block w-6/12"
+                                                v-model="form.promotion_price" autocomplete="promotion_price" />
                                         </div>
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.promotion_price" />
@@ -167,12 +189,17 @@ const handleDetailImages = (e) => {
                         <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="settings" role="tabpanel"
                             aria-labelledby="settings-tab">
                             <div>
-                                <Editor v-model="form.describe" api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0"
-                                    :init="{
-                                        toolbar_mode: 'sliding',
-                                        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-                                        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-                                    }" initial-value="Welcome to TinyMCE!" />
+                                <Editor v-model="form.describe"
+                                    api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0" :init="{
+                        height: '500',
+                        path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
+                            ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
+                                , 'searchreplace wordcount visualblocks visualchars code fullscreen'
+                                , 'insertdatetime media nonbreaking save table directionality'
+                                , 'emoticons template paste textpattern'],
+                        toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media'
+                        , file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
+                    }" />
                                 <InputError class="mt-2" :message="form.errors.describe" />
                             </div>
                         </div>
@@ -193,7 +220,6 @@ const handleDetailImages = (e) => {
                         </div>
                     </form>
                 </div>
-
             </div>
         </div>
     </AuthenticatedLayout>

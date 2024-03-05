@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
@@ -59,5 +59,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function address(): HasOne
     {
         return $this->HasOne(Address::class);
+    }
+
+    public function hasPermission($permission)
+    {
+        if ($this->role->permissions->where('slug', $permission)->count() > 0) {
+            return true;
+        }
+        if ($this->role->name === "Admin") {
+            return true;
+        }
+        return false;
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminCollectionController extends Controller
 {
@@ -58,20 +59,21 @@ class AdminCollectionController extends Controller
         )->validate();
 
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/collections', $name);
-            $urlThumbnail = '/storage/collections/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/collections',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
         if (request()->hasFile('banner')) {
-            $extension = request()->file('banner')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('banner')->storeAs('public/banner', $name);
-            $urlBanner = '/storage/banner/' . $name;
-            $input['banner'] = url($urlBanner);
+            $banner = (new UploadApi())->upload($_FILES['banner']['tmp_name'], [
+                'folder' => 'noithatkzone/banners',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['banner'] = $banner['secure_url'];
+            $input['public_id_banner'] = $banner['public_id'];
         }
         $input['slug'] = Str::slug($input['name']); // vẫn thêm slug vô dc mảng input dù view kh có name 
         $collection = Collection::create($input);
@@ -98,26 +100,39 @@ class AdminCollectionController extends Controller
         $collection->name = request()->name;
 
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/collections', $name);
-            $urlThumbnail = '/storage/collections/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/collections',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            if ($collection->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($collection->public_id_thumbnail);
+            }
             $collection->thumbnail =  $input['thumbnail'];
+            $collection->public_id_thumbnail = $thumbnail['public_id'];
         }
         if (request()->hasFile('banner')) {
-            $extension = request()->file('banner')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('banner')->storeAs('public/banner', $name);
-            $urlBanner = '/storage/banner/' . $name;
-            $input['banner'] = url($urlBanner);
+            $banner = (new UploadApi())->upload($_FILES['banner']['tmp_name'], [
+                'folder' => 'noithatkzone/banners',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['banner'] = $banner['secure_url'];
             $collection->banner =  $input['banner'];
+            if ($collection->public_id_banner !== null) {
+                (new UploadApi())->destroy($collection->public_id_banner);
+            }
+
+            $collection->public_id_banner = $banner['public_id'];
         }
         $collection->save();
     }
-    
+
+    function delete($id)
+    {
+        Collection::destroy($id);
+    }
+
     function action()
     {
         $list_check = request()->list_check;
@@ -134,7 +149,14 @@ class AdminCollectionController extends Controller
                     return redirect()->back()->with(['status' => 'Khôi phục thành công']);
                     break;
                 case 'force_delete':
-                    Collection::withTrashed()->whereIn('id', $list_check)->forceDelete();
+                    $collections = Collection::withTrashed()->whereIn('id', $list_check);
+                    foreach ($collections->get() as $collection) {
+                        if ($collection->public_id_banner !== null && $collection->public_id_thumbnail !== null) {
+                            (new UploadApi())->destroy($collection->public_id_banner);
+                            (new UploadApi())->destroy($collection->public_id_thumbnail);
+                        }
+                    }
+                    $collections->forceDelete();
                     return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
                     break;
                 default:

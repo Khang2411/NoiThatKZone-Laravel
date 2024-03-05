@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+namespace App\Http\Controllers;
+
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,61 +14,32 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-class AdminUserController extends Controller
+class AdminCustomerController extends Controller
 {
     function list()
     {
         $list_action = ['delete' => 'Xóa tạm thời'];
         if (request()->status === 'trash') {
-            $users = User::onlyTrashed()->where('role_id', '!=', '3')->when(request()->search, function ($q) {
-                return $q->where('name', 'LIKE', '%' . request()->search . '%');
-            })->with('role')->paginate(10);
+            $users = User::onlyTrashed()->where('role_id', '3')->with('role')
+                ->when(request()->search, function ($q) {
+                    return $q->where('name', 'LIKE', '%' . request()->search . '%');
+                })->orderBy("id", "DESC")->paginate(10);
 
-            $users->appends(['status' => 'trash']); // khi nhấn qua page 2 vẫn ở status=trash
+            $users->appends(['status' => 'trash']); // page 2 continue status=trash
             $list_action = ['restore' => 'Khôi phục', 'force_delete' => 'Xóa vĩnh viễn'];
         } else {
-            $users = User::where('role_id', '!=', '3')->when(request()->search, function ($q) {
-                return $q->where('name', 'LIKE', '%' . request()->search . '%');
-            })->with('role')->paginate(10);
+            $users = User::where('role_id', '3')->with('role')
+                ->when(request()->search, function ($q) {
+                    return $q->where('name', 'LIKE', '%' . request()->search . '%');
+                })->orderBy("id", "DESC")->paginate(10);
+
             $users->appends(['status' => 'active']);
         }
-        $count_order_active = User::where('role_id', '!=', '3')->count();
-        $count_order_trash = User::where('role_id', '!=', '3')->onlyTrashed()->count();
+        $count_order_active = User::where('role_id', '3')->count();
+        $count_order_trash = User::where('role_id', '3')->onlyTrashed()->count();
         $count = [$count_order_active, $count_order_trash];
         $roles = Role::all();
-        return Inertia::render('User/UserList', ['users' => $users, 'list_action' => $list_action, 'roles' => $roles, 'count' => $count]);
-    }
-
-    function add()
-    {
-        $roles = Role::all();
-        return Inertia::render('User/UserAdd', ['roles' => $roles]);
-    }
-
-    function store()
-    {
-        request()->validate([
-            'name' => ['required', 'string'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role_id' => 'required'
-        ], [
-            'name.required' => 'Tên là bắt buộc',
-            'email.required' => 'Email là bắt buộc',
-            'password.required' => 'Mật khẩu là bắt buộc',
-            'password.min' => 'Mật khẩu tối thiều 8 ký tự',
-            'password.confirmed' => 'Nhập lại mật khẩu không chính xác',
-            'role_id.required' => 'Cấp quyền là bắt buộc'
-        ]);
-
-        $user = User::create([
-            'name' => request()->name,
-            'email' => request()->email,
-            'password' => Hash::make(request()->password),
-            'role_id' => request()->role_id
-        ]);
-        event(new Registered($user));
-        return to_route('admin.user.list');
+        return Inertia::render('User/CustomerList', ['users' => $users, 'list_action' => $list_action, 'roles' => $roles, 'count' => $count]);
     }
 
     function update()

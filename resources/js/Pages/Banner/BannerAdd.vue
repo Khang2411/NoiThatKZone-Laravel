@@ -17,7 +17,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('admin.collection.store'));
+   // form.post(route('admin.collection.store'));
 };
 
 const previewThumbnail = (e) => {
@@ -32,7 +32,7 @@ const previewBanner = (e) => {
 </script>
 
 <template>
-    <Head title="Thêm bộ sưu tập" />
+    <Head title="Thêm Banner" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Ảnh Banner</p>

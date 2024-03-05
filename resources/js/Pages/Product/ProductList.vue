@@ -25,6 +25,7 @@ const previewThumbnailUrl = ref('')
 const previewDetailImage = ref([])
 const detailImages = ref([])
 const removeDetailImage = ref([])
+const toastId = ref('');
 
 const form = useForm({
     search: new URLSearchParams(window.location.search).get('search'),
@@ -64,6 +65,7 @@ const handleModal = (product) => {
     form.defaults({
         id: product.id,
         name: product.name,
+        describe: product.describe,
         collection_id: product.collection_id,
         price: product.price_before_discount ? product.price_before_discount : product.price,
         promotion_price: product.price_before_discount ? product.price : "",
@@ -73,6 +75,7 @@ const handleModal = (product) => {
 
     })
     form.reset();
+    form.errors = [];
 }
 
 const handleThumbnail = (e) => {
@@ -87,6 +90,22 @@ const handleDetailImages = (e) => {
         previewDetailImage.value = [...previewDetailImage.value, URL.createObjectURL(file)]
         detailImages.value = [...detailImages.value, file]
     })
+}
+
+function filePicker(callback, value, meta) {
+    var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
+    var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+
+    var cmsURL = 'http://127.0.0.1:8000/' + 'laravel-filemanager?editor=' + meta.fieldname;
+    if (meta.filetype == 'image') {
+        cmsURL = cmsURL + '&type=Images';
+    } else { cmsURL = cmsURL + '&type=Files'; }
+    tinyMCE.activeEditor.windowManager.openUrl({
+        url: cmsURL, title: 'Filemanager', width: x *
+            0.8, height: y * 0.8, resizable: 'yes', close_previous: 'no', onMessage: (api, message) => {
+                callback(message.content);
+            }
+    });
 }
 
 const handleRemoveImage = (url, index) => {
@@ -106,8 +125,22 @@ const handleAction = (action) => {
     }, {
         onSuccess: () => {
             router.reload({ only: ['products,count'] })
-        }
+            toast.remove(toastId.value)
+            toast.success('Thao tác thành công!');
+        },
+        onStart: () => { toastId.value = toast.loading('Loading...') }
     });
+}
+
+const handleRemove = (id) => {
+    if (confirm("Bạn có muốn xóa?")) {
+        router.post(route('admin.product.delete', id), {
+        }, {
+            onSuccess: () => {
+                router.reload({ only: ['products,count'] })
+            }
+        });
+    }
 }
 
 const handleSearch = debounce((e) => {
@@ -124,18 +157,26 @@ const submit = (id) => {
     form.reset();
     form.post(route('admin.product.update'), {
         onSuccess: () => {
+            router.reload({ only: ['products'] })
+            toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
-        }
+            const targetEl = 'editUserModal';
+            var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
+            currentModalObj.hide();
+        }, onProgress: () => toastId.value = toast.loading('Loading...')
     });
 };
 </script>
 
 <template>
+
     <Head title="Danh sách sản phẩm" />
     <AuthenticatedLayout>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+
             <div v-if="$page.props.flash.status"
-                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300" role="alert">
+                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
+                role="alert">
                 <span class="font-medium">{{ $page.props.flash.status }}</span>
             </div>
             <div class="text-blue-400 dark:text-purple-50 text-sm flex gap-2">
@@ -154,8 +195,8 @@ const submit = (id) => {
                         type="button">
                         <span class="sr-only">Action button</span>
                         Tùy chọn
-                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 10 6">
+                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="m1 1 4 4 4-4" />
                         </svg>
@@ -163,11 +204,12 @@ const submit = (id) => {
                     <!-- Dropdown menu -->
                     <div id="dropdownAction"
                         class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownActionButton">
+                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
+                            aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                 <a href="#" @click="handleAction(key)"
                                     class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                                        value }}</a>
+                value }}</a>
                             </li>
                         </ul>
                     </div>
@@ -239,18 +281,18 @@ const submit = (id) => {
                         </th>
                         <td class="px-11 py-4">
                             {{ product.price_before_discount ? new Intl.NumberFormat('vi-VN', {
-                                style: 'currency', currency: 'VND'
-                            }).format(product.price_before_discount) : new Intl.NumberFormat('vi-VN', {
-                                style: 'currency', currency: 'VND'
-                            }).format(product.price) }}
+                style: 'currency', currency: 'VND'
+            }).format(product.price_before_discount) : new Intl.NumberFormat('vi-VN', {
+                style: 'currency', currency: 'VND'
+            }).format(product.price) }}
                         </td>
                         <td class="px-6 py-4">
                             {{ product.cate_name }}
                         </td>
                         <td class="px-6 py-4">
                             {{ product.price_before_discount ? new Intl.NumberFormat('vi-VN', {
-                                style: 'currency', currency: 'VND'
-                            }).format(product.price) : '' }}
+                style: 'currency', currency: 'VND'
+            }).format(product.price) : '' }}
                         </td>
                         <td class="px-6 py-4">
                             {{ moment(product.updated_at).format("DD-MM-YYYY") }}
@@ -266,7 +308,7 @@ const submit = (id) => {
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </a>
-                                <a href="#">
+                                <a href="#" @click="handleRemove(product.id)">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -338,8 +380,8 @@ const submit = (id) => {
                                                         class="mt-1 block w-6/12 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                                         v-model="form.collection_id">
                                                         <option disabled value="">Chọn thể loại</option>
-                                                        <option v-for="( collection, index ) in  collections " :key="index"
-                                                            :value="collection.id">
+                                                        <option v-for="( collection, index ) in  collections "
+                                                            :key="index" :value="collection.id">
                                                             {{ collection.name }}
                                                         </option>
                                                     </select>
@@ -363,7 +405,8 @@ const submit = (id) => {
                                                         <InputLabel for="promotion_price" value="Giá khuyến mãi"
                                                             class="w-1/6" />
                                                         <TextInput type="text" class="mt-1 block w-6/12"
-                                                            v-model="form.promotion_price" autocomplete="promotion_price" />
+                                                            v-model="form.promotion_price"
+                                                            autocomplete="promotion_price" />
                                                     </div>
                                                 </div>
                                                 <InputError class="mt-2" :message="form.errors.promotion_price" />
@@ -399,7 +442,8 @@ const submit = (id) => {
                                                             <img :src="url.image ? url.image : url"
                                                                 class="w-44 mt-4 h-44" />
                                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                viewBox="0 0 24 24" stroke-width="1.5"
+                                                                stroke="currentColor"
                                                                 class="w-6 h-6 absolute top-0 right-0"
                                                                 @click="handleRemoveImage(url, index)">
                                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -417,11 +461,15 @@ const submit = (id) => {
                                         <div>
                                             <Editor v-model="form.describe"
                                                 api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0" :init="{
-                                                    toolbar_mode: 'sliding',
-                                                    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-                                                    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-                                                }
-                                                    " initial-value="Welcome to TinyMCE!" />
+                height: '500',
+                path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
+                    ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
+                        , 'searchreplace wordcount visualblocks visualchars code fullscreen'
+                        , 'insertdatetime media nonbreaking save table directionality'
+                        , 'emoticons template paste textpattern'],
+                toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media'
+                , file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
+            }" />
                                             <InputError class="mt-2" :message="form.errors.describe" />
 
                                         </div>
@@ -429,17 +477,17 @@ const submit = (id) => {
                                     <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="contacts"
                                         role="tabpanel" aria-labelledby="contacts-tab">
                                         <div>
-                                            <input type="checkbox" v-model="form.is_hot" :checked="form.is_hot === '1'"
+                                            <input type="checkbox" v-model="form.is_hot" :checked="form.is_hot === 1"
                                                 class="mr-2"> Sản phẩm bán chạy
                                         </div>
                                         <div class="mt-5">
                                             <input type="checkbox" v-model="form.is_featured"
-                                                :checked="form.is_featured === '1'" class="mr-2"> Sản phẩm nổi bật
+                                                :checked="form.is_featured === 1" class="mr-2"> Sản phẩm nổi bật
                                         </div>
                                     </div>
                                     <div class="text-right pr-11">
-                                        <PrimaryButton data-modal-hide="editUserModal" class="ms-4"
-                                            :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                                        <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
+                                            :disabled="form.processing">
                                             Lưu
                                         </PrimaryButton>
                                     </div>

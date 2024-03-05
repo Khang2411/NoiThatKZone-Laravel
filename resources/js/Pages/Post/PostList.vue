@@ -50,10 +50,20 @@ const handleAction = (action) => {
     });
 }
 
+const handleRemove = (id) => {
+    if (confirm("Bạn có muốn xóa?")) {
+        router.post(route('admin.post.delete', id), {
+        }, {
+            onSuccess: () => {
+                router.reload({ only: ['posts,count'] })
+            }
+        });
+    }
+}
+
 const handleSearch = debounce((e) => {
     router.get('', { search: e.target.value }, { replace: true })
 }, 500)
-
 </script>
 
 <template>
@@ -86,8 +96,8 @@ const handleSearch = debounce((e) => {
                             Tủy chọn
                             <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 10 6">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="m1 1 4 4 4-4" />
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 4 4 4-4" />
                             </svg>
                         </button>
                         <!-- Dropdown menu -->
@@ -98,18 +108,19 @@ const handleSearch = debounce((e) => {
                                 <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                     <a href="#" @click="handleAction(key)"
                                         class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                                            value }}</a>
+                    value }}</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <label for="table-search" class="sr-only">Search</label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <div
+                            class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                             </svg>
                         </div>
                         <TextInput type="text"
@@ -185,7 +196,7 @@ const handleSearch = debounce((e) => {
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                     </Link>
-                                    <a href="#">
+                                    <a href="#" @click="handleRemove(post.id)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -200,10 +211,7 @@ const handleSearch = debounce((e) => {
                 <div class="mt-2 mb-2 px-2">
                     <Paginate :links="posts.links"></Paginate>
                 </div>
-
-
             </div>
         </AuthenticatedLayout>
     </div>
 </template>
-

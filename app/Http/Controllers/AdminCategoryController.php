@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminCategoryController extends Controller
 {
@@ -31,7 +32,6 @@ class AdminCategoryController extends Controller
                     })->orderBy("id", "DESC")->paginate(10);
 
                 $categories->appends(['status' => 'active', 'search' => request()->search]);
-
                 break;
         }
         $count_order_active = Collection::where('collection_id', '!=', null)->count();
@@ -68,29 +68,30 @@ class AdminCategoryController extends Controller
         )->validate();
 
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/collections', $name);
-            $urlThumbnail = '/storage/collections/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/collections',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
         if (request()->hasFile('banner')) {
-            $extension = request()->file('banner')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('banner')->storeAs('public/banner', $name);
-            $urlBanner = '/storage/banner/' . $name;
-            $input['banner'] = url($urlBanner);
+            $banner = (new UploadApi())->upload($_FILES['banner']['tmp_name'], [
+                'folder' => 'noithatkzone/banners',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['banner'] = $banner['secure_url'];
+            $input['public_id_banner'] = $banner['public_id'];
         }
         $input['slug'] = Str::slug($input['name']); // vẫn thêm slug vô dc mảng input dù view kh có name 
         Collection::create($input);
 
         return to_route('admin.category.list');
     }
+
     function update()
     {
-
         Validator::make(
             request()->all(),
             [
@@ -110,25 +111,38 @@ class AdminCategoryController extends Controller
         $collection = Collection::find(request()->id);
         $collection->name = request()->name;
         $collection->collection_id = request()->collection_id;
+
         if (request()->hasFile('thumbnail')) {
-            $extension = request()->file('thumbnail')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('thumbnail')->storeAs('public/collections', $name);
-            $urlThumbnail = '/storage/collections/' . $name;
-            $input['thumbnail'] = url($urlThumbnail);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/collections',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            if ($collection->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($collection->public_id_thumbnail);
+            }
             $collection->thumbnail =  $input['thumbnail'];
+            $collection->public_id_thumbnail = $thumbnail['public_id'];
         }
         if (request()->hasFile('banner')) {
-            $extension = request()->file('banner')->extension();
-            $name = microtime() . md5(Str::random(10)) . '.' . $extension;
-            $name = Str::replace(" ", "", $name);
-            request()->file('banner')->storeAs('public/banner', $name);
-            $urlBanner = '/storage/banner/' . $name;
-            $input['banner'] = url($urlBanner);
+            $banner = (new UploadApi())->upload($_FILES['banner']['tmp_name'], [
+                'folder' => 'noithatkzone/banners',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['banner'] = $banner['secure_url'];
             $collection->banner =  $input['banner'];
+            if ($collection->public_id_banner !== null) {
+                (new UploadApi())->destroy($collection->public_id_banner);
+            }
+            $collection->public_id_banner = $banner['public_id'];
         }
         $collection->save();
+    }
+
+    function delete($id)
+    {
+        Collection::destroy($id);
     }
 
     function action()
@@ -147,7 +161,14 @@ class AdminCategoryController extends Controller
                     return redirect()->back()->with(['status' => 'Khôi phục thành công']);
                     break;
                 case 'force_delete':
-                    Collection::withTrashed()->whereIn('id', $list_check)->forceDelete();
+                    $categories = Collection::withTrashed()->whereIn('id', $list_check);
+                    foreach ($categories->get() as $category) {
+                        if ($category->public_id_banner !== null && $category->public_id_thumbnail !== null) {
+                            (new UploadApi())->destroy($category->public_id_banner);
+                            (new UploadApi())->destroy($category->public_id_thumbnail);
+                        }
+                    }
+                    $categories->forceDelete();
                     return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
                     break;
                 default:

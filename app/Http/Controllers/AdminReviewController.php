@@ -60,8 +60,12 @@ class AdminReviewController extends Controller
             'rating' => '',
             'status' => 'confirmed'
         ]);
-
         $review->save();
+    }
+
+    function delete($id)
+    {
+        Review::destroy($id);
     }
 
     function action()

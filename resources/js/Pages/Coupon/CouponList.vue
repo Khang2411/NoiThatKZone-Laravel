@@ -13,24 +13,31 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
-    users: Object,
-    roles: Object,
-    list_action: Array,
+    coupons: Object,
     count: Array,
+    list_action: Array,
 })
-
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
 const toastId = ref('');
 
+const types = [
+    {
+        id: 'percent',
+        name: 'Phần trăm'
+    }, {
+        id: 'fixed',
+        name: 'Cố định'
+    }]
+
 const form = useForm({
     id: '',
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
-    role_id: '',
-    phone: '',
     search: new URLSearchParams(window.location.search).get('search'),
+    name: '',
+    code: '',
+    limit: '',
+    amount: '',
+    type: '',
+    minimum_spend: '',
     list_check: [],
     all_selected: false
 });
@@ -38,77 +45,81 @@ const form = useForm({
 const handleSelectAll = () => {
     console.log(form.all_selected)
     if (form.all_selected === true) {
-        for (let i in props.users.data) {
-            form.list_check.push(props.users.data[i].id)
+        for (let i in props.coupons.data) {
+            form.list_check.push(props.coupons.data[i].id)
         }
     } else {
         form.list_check = []
     }
 }
 
-const handleModal = (user) => {
+const handleModal = (coupon) => {
+
     form.defaults({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role_id: user.role_id,
-        phone: user.phone
+        id: coupon.id,
+        name: coupon.name,
+        code: coupon.code,
+        limit: coupon.limit,
+        amount: coupon.amount,
+        type: coupon.type,
+        minimum_spend: coupon.minimum_spend
+
     })
     form.reset();
     form.errors = [];
 }
 
-const handleSearch = debounce((e) => {
-    console.log(e.target.value)
-    router.get('', { search: e.target.value }, { replace: true })
-}, 500)
-
 const handleAction = (action) => {
-    console.log(action)
-    router.post(route('admin.user.action'), {
+    router.post(route('admin.coupon.action'), {
         action: action,
         list_check: form.list_check
     }, {
         onSuccess: () => {
-            router.reload({ only: ['users,count'] })
+            router.reload({ only: ['coupons,count'] })
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
         onStart: () => { toastId.value = toast.loading('Loading...') }
+
     });
 }
 
 const handleRemove = (id) => {
     if (confirm("Bạn có muốn xóa?")) {
-        router.post(route('admin.user.delete', id), {
+        router.post(route('admin.coupon.delete', id), {
         }, {
             onSuccess: () => {
-                router.reload({ only: ['users,count'] })
+                router.reload({ only: ['coupons,count'] })
             }
         });
     }
 }
 
+const handleSearch = debounce((e) => {
+    router.get('', { search: e.target.value }, { replace: true })
+}, 500)
+
 const submit = () => {
-    form.post(route('admin.user.update'), {
+    form.post(route('admin.coupon.update'), {
         onSuccess: () => {
-            router.reload({ only: ['users'] })
+            router.reload({ only: ['coupons'] })
             toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
             const targetEl = 'editUserModal';
             var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
             currentModalObj.hide();
         },
-        onProgress: () => toastId.value = toast.loading('Loading...'),
+        onProgress: () => toastId.value = toast.loading('Loading...')
     });
-};
+}
+
 </script>
 
 <template>
 
-    <Head title="Danh sách thành viên" />
+    <Head title="Danh sách mã giảm giá" />
     <AuthenticatedLayout>
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <div v-if="$page.props.flash.status"
                 class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
                 role="alert">
@@ -117,11 +128,11 @@ const submit = () => {
 
             <div class="text-blue-400 dark:text-purple-50 text-sm flex gap-2">
                 <Link :class="{ 'active': queryParam === 'active' }" class="[&.active]:border-b-4 border-indigo-500"
-                    href="?status=active" :only="['users,list_action']">
+                    href="?status=active" :only="['coupons,list_action']">
                 Tất cả ({{ count[0] }})</Link>
                 <span class="after:content-['_|']"></span>
                 <Link :class="{ 'active': queryParam === 'trash' }" class="[&.active]:border-b-4 border-indigo-500"
-                    href="?status=trash" :only="['users,list_action']">Rác ({{ count[1] }})</Link>
+                    href="?status=trash" :only="['coupons,list_action']">Rác ({{ count[1] }})</Link>
             </div>
             <div
                 class="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white dark:bg-gray-900 px-2">
@@ -130,7 +141,7 @@ const submit = () => {
                         class="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
                         type="button">
                         <span class="sr-only">Action button</span>
-                        Tủy chọn
+                        Tùy chọn
                         <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 10 6">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -144,8 +155,8 @@ const submit = () => {
                             aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                 <a href="#" @click="handleAction(key)"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                value }}</a>
+                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                    {{ value }}</a>
                             </li>
                         </ul>
                     </div>
@@ -161,7 +172,7 @@ const submit = () => {
                     </div>
                     <TextInput type="text"
                         class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        v-model="form.search" placeholder="Tìm kiếm tên khách hàng" @keyup="handleSearch($event)"
+                        v-model="form.search" placeholder="Tìm kiếm" @keyup="handleSearch($event)"
                         autocomplete="search" />
                 </div>
             </div>
@@ -179,13 +190,17 @@ const submit = () => {
                         <th scope="col" class="px-6 py-3">
                             Tên
                         </th>
-
                         <th scope="col" class="px-6 py-3">
-                            Quyền
+                            Mã coupon
                         </th>
-
                         <th scope="col" class="px-6 py-3">
-                            Thời gian
+                            Số tiền giảm
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Điều kiện
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Ngày tạo
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Tác vụ
@@ -193,39 +208,47 @@ const submit = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(user, index) in users.data" :key="index"
+                    <tr v-for="(coupon, index) in coupons.data" :key="index"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="w-4 p-4">
                             <div class="flex items-center">
                                 <input id="checkbox-table-search-1" type="checkbox" v-model="form.list_check"
-                                    :value="user.id"
+                                    :value="coupon.id"
                                     class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                 <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
                             </div>
                         </td>
                         <th scope="row">
                             <div class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                <div
-                                    class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-                                    <span class="font-medium text-gray-600 dark:text-gray-300">{{ user.name }}</span>
-                                </div>
                                 <div class="ps-3">
-                                    <span class="text-xs font-semibold">{{ user.name }}</span>
-                                    <div class="font-normal text-gray-500">{{ user.email }}</div>
+                                    <span class="text-xs font-semibold">{{ coupon.name }}</span>
                                 </div>
                             </div>
                         </th>
 
                         <td class="px-6 py-4">
-                            {{ (user.role.name) }}
+                            {{ coupon.code }}
                         </td>
 
                         <td class="px-6 py-4">
-                            {{ moment(user.updated_at).format("DD-MM-YYYY") }}
+                            {{ coupon.type != 'percent' ? new Intl.NumberFormat('vi-VN', {
+                style: 'currency', currency: 'VND'
+            }).format(coupon.amount) : coupon.amount + '%' }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ coupon.minimum_spend && new Intl.NumberFormat('vi-VN', {
+                style: 'currency', currency:
+                    'VND'
+            }).format(coupon.minimum_spend) }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ moment(coupon.updated_at).format("DD-MM-YYYY") }}
                         </td>
                         <td class="px-6 py-4 ">
                             <div class="flex items-center">
-                                <a v-if="queryParam != 'trash'" href="#" type="button" @click="handleModal(user)"
+                                <a v-if="queryParam != 'trash'" href="#" type="button" @click="handleModal(coupon)"
                                     data-modal-target="editUserModal" data-modal-show="editUserModal"
                                     class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -234,7 +257,7 @@ const submit = () => {
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </a>
-                                <a href="#" @click="handleRemove(user.id)">
+                                <a href="#" @click="handleRemove(coupon.id)">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -247,102 +270,100 @@ const submit = () => {
                 </tbody>
             </table>
             <div class="mt-2 mb-2 px-2">
-                <Paginate :links="users.links"></Paginate>
+                <Paginate :links="coupons.links"></Paginate>
             </div>
 
-            <!-- Edit user modal -->
+            <!-- Edit modal -->
             <div id="editUserModal" tabindex="-1" aria-hidden="true"
                 class="fixed top-0 left-0 right-0 z-50 items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
                 <div class="relative w-full max-w-2xl max-h-full">
                     <!-- Modal content -->
-                    <form @submit.prevent="submit" class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                        <!-- Modal header -->
-                        <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                Cập nhật thành viên
-                            </h3>
-                            <button type="button"
-                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                data-modal-hide="editUserModal">
-                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 14 14">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                </svg>
-                                <span class="sr-only">Close modal</span>
-                            </button>
-                        </div>
-                        <!-- Modal boy -->
-                        <div class="p-10">
-                            <div>
-                                <InputLabel for="name" value="Name" />
-
-                                <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name"
-                                    autocomplete="name" />
-
-                                <InputError class="mt-2" :message="form.errors.name" />
+                    <div class="relative w-full max-w-2xl max-h-full">
+                        <form @submit.prevent="submit" class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                            <!-- Modal header -->
+                            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    Cập nhật mã giảm giá
+                                </h3>
+                                <button type="button"
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                    data-modal-hide="editUserModal">
+                                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                    <span class="sr-only">Close modal</span>
+                                </button>
                             </div>
+                            <!-- Modal body -->
+                            <div class="p-10">
+                                <div class="mb-5">
+                                    <InputLabel for="name" value="Tên thể loại" />
+                                    <TextInput type="text"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        v-model="form.name" />
+                                    <InputError class="mt-2" :message="form.errors.name" />
+                                </div>
 
-                            <div class="mt-4">
-                                <InputLabel for="email" value="Email" />
+                                <div class="mb-5">
+                                    <InputLabel for="code" value="Mã" />
+                                    <TextInput type="text"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        v-model="form.code" />
+                                    <InputError class="mt-2" :message="form.errors.code" />
+                                </div>
 
-                                <TextInput id="email" type="email" disabled class="mt-1 block w-full dark:bg-gray-400"
-                                    v-model="form.email" autocomplete="username" />
-
-                                <InputError class="mt-2" :message="form.errors.email" />
-                            </div>
-
-                            <div class="mt-4">
-                                <InputLabel for="phone" value="Phone" />
-
-                                <TextInput id="phone" type="text" class="mt-1 block w-full dark:bg-gray-500"
-                                    v-model="form.phone" autocomplete="phone" />
-
-                                <InputError class="mt-2" :message="form.errors.phone" />
-                            </div>
-
-                            <div class="mt-4">
-                                <InputLabel for="password" value="Password" />
-
-                                <TextInput id="password" type="password" class="mt-1 block w-full"
-                                    v-model="form.password" autocomplete="new-password" />
-
-                                <InputError class="mt-2" :message="form.errors.password" />
-                            </div>
-
-                            <div class="mt-4">
-                                <InputLabel for="password_confirmation" value="Confirm Password" />
-
-                                <TextInput id="password_confirmation" type="password" class="mt-1 block w-full"
-                                    v-model="form.password_confirmation" autocomplete="new-password" />
-
-                                <InputError class="mt-2" :message="form.errors.password_confirmation" />
-                            </div>
-
-                            <div class="mt-4">
-                                <InputLabel for="role" value="Vai trò" />
-
-                                <div class="flex flex-wrap gap-5">
-                                    <div v-for="(role, index) in roles" :key="index">
-                                        <input type="radio" :value="role.id" v-model="form.role_id" />
-                                        <label class="ml-2 dark:text-[#B6C6C2]">{{ role.name }}</label>
+                                <div>
+                                    <div class="mb-5">
+                                        <InputLabel for="type" value="Chọn loại giảm giá" class="w-full" />
+                                        <select id="type"
+                                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                            v-model="form.type">
+                                            <option disabled value="">Chọn loại giảm giá</option>
+                                            <option v-for="(type, index) in types" :key="index" :value="type.id">
+                                                {{ type.name }}
+                                            </option>
+                                        </select>
+                                        <InputError class="mt-2" :message="form.errors.type" />
                                     </div>
                                 </div>
-                                <InputError class="mt-2" :message="form.errors.role_id" />
+
+                                <div class="mb-5">
+                                    <InputLabel for="name" value="Số tiền giảm" />
+                                    <TextInput type="text"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        v-model="form.amount" />
+                                    <InputError class="mt-2" :message="form.errors.amount" />
+                                </div>
+
+                                <div class="mb-5">
+                                    <InputLabel for="name" value="Chi tiêu tối thiểu" />
+                                    <TextInput type="text"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        v-model="form.minimum_spend" />
+                                    <InputError class="mt-2" :message="form.errors.minimum_spend" />
+                                </div>
+
+                                <div class="mb-5">
+                                    <InputLabel for="name" value="Giới hạn" />
+                                    <TextInput type="number" min="0"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        v-model="form.limit" />
+                                    <InputError class="mt-2" :message="form.errors.limit" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-right pr-2 p-5">
-                            <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
-                                :disabled="form.processing">
-                                Lưu
-                            </PrimaryButton>
-                        </div>
-                    </form>
+                            <div class="text-right p-2">
+                                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
+                                    :disabled="form.processing">
+                                    Lưu
+                                </PrimaryButton>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-
-
     </AuthenticatedLayout>
 </template>
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminProductController extends Controller
 {
@@ -52,8 +53,9 @@ class AdminProductController extends Controller
     function store()
     {
         $input = request()->all();
-        $input['price'] = Str::replace('.', '', $input['price']);
-        $input['promotion_price'] = Str::replace('.', '', $input['promotion_price']);
+        $input['price'] = Str::replace(['.', ','], '', $input['price']);
+        $input['promotion_price'] = Str::replace(['.', ','], '', $input['promotion_price']);
+
         Validator::make(
             $input,
             [
@@ -77,12 +79,16 @@ class AdminProductController extends Controller
         )->validate();
 
         if (request()->hasFile('thumbnail')) {
-            $name = request()->file('thumbnail')->getClientOriginalName();
-            request()->file('thumbnail')->storeAs('public/products', $name);
-            $urlImg = '/storage/products/' . $name;
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/products',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
-        $input['thumbnail'] = url($urlImg);
-        $input['slug'] = Str::slug($input['name']); // vẫn thêm slug vô dc mảng input dù view kh có name 
+
+        $input['slug'] = Str::slug($input['name']);
         if ($input['promotion_price']) {
             $input['price_before_discount'] = $input['price'];
             $input['price'] = $input['promotion_price'];
@@ -91,12 +97,15 @@ class AdminProductController extends Controller
 
         // ADD Product Images
         if ($product && request()->hasFile('detail_images')) {
-            foreach (request()->file('detail_images') as $image) {
-                $nameFile = $image->getClientOriginalName();
-                $image->storeAs('public/detail_images/', $nameFile); // cho ảnh vô thư mục
-                $urlMultifile = 'storage/detail_images/' . $nameFile; // lấy url
-                $data['image'] = url($urlMultifile); // lấy form name multifile để add vô database không lấy $input vì đang gán nhiều trưởng $input = $request->all();
+            foreach ($_FILES['detail_images']['tmp_name'] as $image) {
+                $detailImage = (new UploadApi())->upload($image, [
+                    'folder' => 'noithatkzone/detail_images',
+                    'format' => 'jpg',
+                    'quality' => '80',
+                ]);
+                $data['image'] =  $detailImage['secure_url'];
                 $data['product_id'] = $product->id;
+                $data['public_id_image'] = $detailImage['public_id'];
                 DetailImage::create($data);
             }
         }
@@ -105,23 +114,9 @@ class AdminProductController extends Controller
 
     function update()
     {
-        // if (request()->hasFile('detail_images')) { // Có chi tiết ảnh
-        //     foreach (request()->file("detail_images") as  $image) {
-        //         echo 1;
-        //         // $extension = $image->extension();
-        //         // $imageName = microtime() . md5(Str::random(10)) . '.' . $extension;
-        //         // $imageName = Str::replace(" ", "", $imageName);
-        //         // $image->storeAs('public/detail_images/', $imageName); // cho ảnh vô thư mục
-        //         // $urlMultifile = 'storage/detail_images/' . $imageName; // lấy url
-        //         // $data['image'] = url($urlMultifile); // lấy form name multifile để add vô database không lấy $input vì đang gán nhiều trưởng $input = $request->all();
-        //         // $data['product_id'] = $input['id'];
-        //         // DetailImage::create($data);
-        //     }
-        // }
-        // return request()->all();
         $input = request()->all();
-        $input['price'] = Str::replace('.', '', $input['price']);
-        $input['promotion_price'] = Str::replace('.', '', $input['promotion_price']);
+        $input['price'] = Str::replace(['.', ','], '', $input['price']);
+        $input['promotion_price'] = Str::replace(['.', ','], '', $input['promotion_price']);
         if ($input['promotion_price']) {
             $input['price_before_discount'] = $input['price'];
             $input['price'] = $input['promotion_price'];
@@ -129,39 +124,72 @@ class AdminProductController extends Controller
         if (request()->thumbnail == "undefined") {
             $input = request()->except("thumbnail");
         }
+        
+        Validator::make(
+            $input,
+            [
+                'name' => 'required',
+                'collection_id' => 'required',
+                'stock' => 'nullable',
+                'price' => 'required|integer',
+                'promotion_price' => 'nullable|integer',
+                'thumbnail' => 'required',
+                'describe' => 'required'
+            ],
+            [
+                'name.required' => 'Tên sản phẩm là bắt buộc',
+                'collection_id.required' => 'Thể loại  là bắt buộc',
+                'price.required' => 'Giá sản phẩm là bắt buộc',
+                'price.integer' => 'Giá sản phẩm không hợp lệ',
+                'promotion_price.integer' => 'Giá khuyến mãi không hợp lệ',
+                'thumbnail.required' => 'Ảnh sản phẩm là bắt buộc',
+                'describe.required' => 'Nội dung sản phẩm là bắt buộc'
+            ]
+        )->validate();
+
+        $removeImages = request()->removeDetailImage;
+        if ($removeImages) {
+            foreach ($removeImages as $item) {
+                if ($item['public_id_image'] !== null) {
+                    (new UploadApi())->destroy($item['public_id_image']);
+                }
+                DetailImage::destroy($item['id']);
+            }
+        }
 
         if (request()->hasFile('detail_images')) { // Có chi tiết ảnh
-            foreach (request()->file("detail_images") as  $image) {
-                $extension = $image->extension();
-                $imageName = microtime() . md5(Str::random(10)) . '.' . $extension;
-                $imageName = Str::replace(" ", "", $imageName);
-                $image->storeAs('public/detail_images/', $imageName); // cho ảnh vô thư mục
-                $urlMultifile = 'storage/detail_images/' . $imageName; // lấy url
-                $data['image'] = url($urlMultifile); // lấy form name multifile để add vô database không lấy $input vì đang gán nhiều trưởng $input = $request->all();
+            foreach ($_FILES['detail_images']['tmp_name'] as $image) {
+                $detailImage = (new UploadApi())->upload($image, [
+                    'folder' => 'noithatkzone/detail_images',
+                    'format' => 'jpg',
+                    'quality' => '80',
+                ]);
+                $data['image'] =  $detailImage['secure_url'];
                 $data['product_id'] = $input['id'];
+                $data['public_id_image'] = $detailImage['public_id'];
                 DetailImage::create($data);
             }
         }
 
         if (request()->hasFile('thumbnail')) { // Có ảnh 
-            $extension = request()->file('thumbnail')->extension();
-            // $imageName = microtime() . md5(Str::random(10)) . '.' . $extension;
-            // $imageName = Str::replace(" ", "", $imageName);
-            // response(Storage::disk("products")->put($imageName, file_get_contents(request()->file('thumbnail'))));
-            // $input["thumbnail"] = url($imageName);
-            // if (request()->default_thumbnail) {
-            //     unlink(storage_path('app/public/products/' . request()->default_thumbnail));
-            // }
-            $name = request()->file('thumbnail')->getClientOriginalName();
-            request()->file('thumbnail')->storeAs('public/products', $name);
-            $urlImg = '/storage/products/' . $name;
-            $input["thumbnail"] = url($urlImg);
+            $thumbnail = (new UploadApi())->upload($_FILES['thumbnail']['tmp_name'], [
+                'folder' => 'noithatkzone/products',
+                'format' => 'jpg',
+                'quality' => '80',
+            ]);
+            $input['thumbnail'] = $thumbnail['secure_url'];
+            $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
         $id = request()->id;
         $product = Product::find($id);
         $product->fill($input)->save();
         $product->collection;
         // return response()->json($product);
+    }
+
+    function delete($id)
+    {
+        Product::destroy($id);
     }
 
     function action()
@@ -180,7 +208,20 @@ class AdminProductController extends Controller
                     return redirect()->back()->with(['status' => 'Khôi phục thành công']);
                     break;
                 case 'force_delete':
-                    Product::withTrashed()->whereIn('id', $list_check)->forceDelete();
+                    $products = Product::withTrashed()->whereIn('id', $list_check)->with('detailImages');
+                    foreach ($products->get() as $product) {
+                        if ($product->public_id_thumbnail !== null) {
+                            (new UploadApi())->destroy($product->public_id_thumbnail);
+                        }
+
+                        foreach ($product->detailImages as $detailImage) {
+                            if ($detailImage->public_id_image !== null) {
+                                (new UploadApi())->destroy($detailImage->public_id_image);
+                            }
+                            DetailImage::destroy($detailImage->id);
+                        }
+                    }
+                    $products->forceDelete();
                     return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
                     break;
                 default:

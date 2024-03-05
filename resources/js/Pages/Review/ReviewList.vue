@@ -14,24 +14,38 @@ import 'vue3-toastify/dist/index.css';
 
 moment.locale('vi')
 
-defineProps({
+const props = defineProps({
     reviews: Object,
     list_action: Array,
     count: Array,
 })
 
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
+const toastId = ref('');
 
 const form = useForm({
-    list_check: [],
     id: '',
     content: '',
     reply: '',
     user_id: '',
     product_id: '',
     status: '',
-    review_id: ''
+    review_id: '',
+    list_check: [],
+    all_selected: false,
 });
+
+const handleSelectAll = () => {
+    console.log(form.all_selected)
+    if (form.all_selected === true) {
+        for (let i in props.reviews.data) {
+            form.list_check.push(props.reviews.data[i].id)
+            console.log(props.reviews.data[i].id)
+        }
+    } else {
+        form.list_check = []
+    }
+}
 
 const handleModal = (review) => {
     form.defaults({
@@ -44,6 +58,7 @@ const handleModal = (review) => {
         review_id: review.review_id ? review.review_id : review.id
     })
     form.reset();
+    form.errors = [];
 }
 
 const handleAction = (action) => {
@@ -54,26 +69,46 @@ const handleAction = (action) => {
     }, {
         onSuccess: () => {
             router.reload({ only: ['reviews,count'] })
-        }
+            toast.remove(toastId.value)
+            toast.success('Thao tác thành công!');
+        },
+        onStart: () => { toastId.value = toast.loading('Loading...') }
     });
+}
+
+const handleRemove = (id) => {
+    if (confirm("Bạn có muốn xóa?")) {
+        router.post(route('admin.review.delete', id), {
+        }, {
+            onSuccess: () => {
+                router.reload({ only: ['reviews,count'] })
+            }
+        });
+    }
 }
 
 const submit = () => {
     form.post(route('admin.review.update'), {
         onSuccess: () => {
-            toast.success('Cập nhật thành công!');
             router.reload({ only: ['reviews'] })
-        }
+            toast.success('Cập nhật thành công!');
+            const targetEl = 'editUserModal';
+            var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
+            currentModalObj.hide();
+        }, onProgress: () => toastId.value = toast.loading('Loading...')
     });
 };
 
 </script>
+
 <template>
+
     <Head title="Danh sách đánh giá" />
     <AuthenticatedLayout>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
-                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300" role="alert">
+                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
+                role="alert">
                 <span class="font-medium">{{ $page.props.flash.status }}</span>
             </div>
 
@@ -93,8 +128,8 @@ const submit = () => {
                         type="button">
                         <span class="sr-only">Action button</span>
                         Tủy chọn
-                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 10 6">
+                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="m1 1 4 4 4-4" />
                         </svg>
@@ -102,7 +137,8 @@ const submit = () => {
                     <!-- Dropdown menu -->
                     <div id="dropdownAction"
                         class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownActionButton">
+                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
+                            aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action)" :key="index">
                                 <a href="#" @click="handleAction(key)"
                                     class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
@@ -130,7 +166,8 @@ const submit = () => {
                     <tr>
                         <th scope="col" class="p-4">
                             <div class="flex items-center">
-                                <input id="checkbox-all-search" type="checkbox"
+                                <input id="checkbox-all-search" type="checkbox" @change="handleSelectAll()"
+                                    v-model="form.all_selected"
                                     class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                 <label for="checkbox-all-search" class="sr-only">checkbox</label>
                             </div>
@@ -205,8 +242,9 @@ const submit = () => {
 
 
                         <td class="px-6 py-4 text-blue-400">
-                            <a :href="`http://localhost:3000/${review.product.slug}/${review.product.id}`" target="_blank">{{
-                                review.product.name }}</a>
+                            <a :href="`http://localhost:3000/${review.product.slug}/${review.product.id}`"
+                                target="_blank">{{
+                review.product.name }}</a>
                         </td>
 
                         <td class="px-6 py-4 ">
@@ -220,7 +258,7 @@ const submit = () => {
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </a>
-                                <a href="#">
+                                <a href="#" @click="handleRemove(review.id)">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -293,8 +331,8 @@ const submit = () => {
                         </div>
 
                         <div class="text-right pr-2 p-5">
-                            <PrimaryButton data-modal-hide="editUserModal" class="ms-4"
-                                :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                            <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
+                                :disabled="form.processing">
                                 Cập nhật
                             </PrimaryButton>
                         </div>
