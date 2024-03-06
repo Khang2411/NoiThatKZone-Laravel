@@ -47,7 +47,7 @@ const handleAction = (action) => {
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
-        onStart: () => {toastId.value = toast.loading('Loading...')}
+        onStart: () => { toastId.value = toast.loading('Loading...') }
     });
 }
 
@@ -60,8 +60,11 @@ const handleRemove = (id) => {
         router.post(route('admin.role.delete', id), {
         }, {
             onSuccess: () => {
-                router.reload({ only: ['roles'] })
-            }
+                router.reload({ only: ['roles,count'] })
+                toast.remove(toastId.value)
+                toast.success('Xóa thành công!');
+            },
+            onStart: () => { toastId.value = toast.loading('Loading...') }
         });
     }
 }

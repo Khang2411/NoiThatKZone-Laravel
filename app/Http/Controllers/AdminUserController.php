@@ -96,7 +96,13 @@ class AdminUserController extends Controller
 
     function delete($id)
     {
-        User::destroy($id);
+        $user = User::withTrashed()->find($id);
+
+        if ($user->deleted_at) {
+            $user->forceDelete();
+        } else {
+            $user->delete();
+        }
     }
 
     function action()

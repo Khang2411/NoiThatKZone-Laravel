@@ -6,6 +6,7 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
 import moment from "moment";
 import { ref } from 'vue';
+import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
@@ -15,6 +16,7 @@ const props = defineProps({
 })
 
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
+const toastId = ref('');
 
 const form = useForm({
     id: '',
@@ -46,7 +48,10 @@ const handleAction = (action) => {
     }, {
         onSuccess: () => {
             router.reload({ only: ['posts,count'] })
-        }
+            toast.remove(toastId.value)
+            toast.success('Thao tác thành công!');
+        },
+        onStart: () => { toastId.value = toast.loading('Loading...') }
     });
 }
 
@@ -55,8 +60,11 @@ const handleRemove = (id) => {
         router.post(route('admin.post.delete', id), {
         }, {
             onSuccess: () => {
-                router.reload({ only: ['posts,count'] })
-            }
+            router.reload({ only: ['posts,count'] })
+            toast.remove(toastId.value)
+            toast.success('Xóa thành công!');
+        },
+        onStart: () => { toastId.value = toast.loading('Loading...') }
         });
     }
 }

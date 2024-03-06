@@ -156,7 +156,13 @@ class AdminCouponController extends Controller
 
     function delete($id)
     {
-        Coupon::destroy($id);
+        $coupon = Coupon::withTrashed()->find($id);
+
+        if ($coupon->deleted_at) {
+            $coupon->forceDelete();
+        } else {
+            $coupon->delete();
+        }
     }
     function action()
     {

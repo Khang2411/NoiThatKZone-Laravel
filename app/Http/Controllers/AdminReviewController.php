@@ -65,7 +65,13 @@ class AdminReviewController extends Controller
 
     function delete($id)
     {
-        Review::destroy($id);
+        $review = Review::withTrashed()->find($id);
+
+        if ($review->deleted_at) {
+            $review->forceDelete();
+        } else {
+            $review->delete();
+        }
     }
 
     function action()

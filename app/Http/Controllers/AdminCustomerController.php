@@ -69,7 +69,13 @@ class AdminCustomerController extends Controller
 
     function delete($id)
     {
-        User::destroy($id);
+        $customer = User::withTrashed()->find($id);
+
+        if ($customer->deleted_at) {
+            $customer->forceDelete();
+        } else {
+            $customer->delete();
+        }
     }
 
     function action()

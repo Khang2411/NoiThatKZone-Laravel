@@ -161,6 +161,12 @@ class AdminOrderController extends Controller
     
     function delete($id)
     {
-        Order::destroy($id);
+        $order = Order::withTrashed()->find($id);
+
+        if ($order->deleted_at) {
+            $order->forceDelete();
+        } else {
+            $order->delete();
+        }
     }
 }

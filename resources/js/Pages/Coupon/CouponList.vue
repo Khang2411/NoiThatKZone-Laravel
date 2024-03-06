@@ -54,7 +54,6 @@ const handleSelectAll = () => {
 }
 
 const handleModal = (coupon) => {
-
     form.defaults({
         id: coupon.id,
         name: coupon.name,
@@ -90,7 +89,10 @@ const handleRemove = (id) => {
         }, {
             onSuccess: () => {
                 router.reload({ only: ['coupons,count'] })
-            }
+                toast.remove(toastId.value)
+                toast.success('Xóa thành công!');
+            },
+            onStart: () => toastId.value = toast.loading('Loading...')
         });
     }
 }

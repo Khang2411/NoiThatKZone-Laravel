@@ -125,7 +125,16 @@ class AdminPostController extends Controller
 
     function delete($id)
     {
-        Post::destroy($id);
+        $post = Post::withTrashed()->find($id);
+
+        if ($post->deleted_at) {
+            if ($post->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($post->public_id_thumbnail);
+            }
+            $post->forceDelete();
+        } else {
+            $post->delete();
+        }
     }
 
     function action()

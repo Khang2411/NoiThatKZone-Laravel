@@ -71,7 +71,9 @@ onMounted(() => {
                 y: {
                     beginAtZero: true
                 }
-            }
+            },
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 })
@@ -100,6 +102,8 @@ onMounted(() => {
                     }
                 }
             },
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 })
@@ -111,10 +115,10 @@ onMounted(() => {
             <div class="col-span-3 bg-gray-50 dark:bg-gray-800 p-2 h-80">
                 <canvas ref="canvasLineRef"></canvas>
             </div>
-            <div class="col-span-2 bg-gray-50 dark:bg-gray-800 p-2">
+            <div class="col-span-3 md:col-span-2 bg-gray-50 dark:bg-gray-800 p-2">
                 <canvas ref="canvasBarRef"></canvas>
             </div>
-            <div class="bg-gray-50 dark:bg-gray-800">
+            <div class="col-span-3 md:col-span-1 bg-gray-50 dark:bg-gray-800">
                 <canvas ref="canvasDoughnutRef"></canvas>
             </div>
         </div>

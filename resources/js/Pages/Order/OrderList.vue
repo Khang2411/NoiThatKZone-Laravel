@@ -1,14 +1,14 @@
 <script setup>
-import { ref } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Paginate from '@/Components/Paginate.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { router } from '@inertiajs/vue3'
-import 'vue3-toastify/dist/index.css';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
 import 'moment/min/locales.min.js';
-import { debounce } from 'lodash'
+import { ref } from 'vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 import moment from "moment";
 import 'moment/dist/locale/vi';
@@ -21,6 +21,7 @@ const props = defineProps({
 })
 
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
+const toastId = ref('');
 
 const form = useForm({
     search: new URLSearchParams(window.location.search).get('search'),
@@ -75,11 +76,11 @@ const handleAction = (action) => {
         list_check: form.list_check
     }, {
         onSuccess: () => {
-            router.reload({ only: ['users,count'] })
+            router.reload({ only: ['orders,count'] })
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
-        onStart: () => {toastId.value = toast.loading('Loading...')}
+        onStart: () => { toastId.value = toast.loading('Loading...') }
     });
 }
 
@@ -89,7 +90,10 @@ const handleRemove = (id) => {
         }, {
             onSuccess: () => {
                 router.reload({ only: ['orders,count'] })
-            }
+                toast.remove(toastId.value)
+                toast.success('Xóa thành công!');
+            },
+            onStart: () => { toastId.value = toast.loading('Loading...') }
         });
     }
 }
@@ -98,12 +102,15 @@ const submit = () => {
 };
 
 </script>
+
 <template>
+
     <Head title="Danh sách đơn đặt hàng" />
     <AuthenticatedLayout>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
-                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300" role="alert">
+                class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
+                role="alert">
                 <span class="font-medium">{{ $page.props.flash.status }}</span>
             </div>
 
@@ -123,8 +130,8 @@ const submit = () => {
                         type="button">
                         <span class="sr-only">Action button</span>
                         Tủy chọn
-                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 10 6">
+                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="m1 1 4 4 4-4" />
                         </svg>
@@ -132,11 +139,12 @@ const submit = () => {
                     <!-- Dropdown menu -->
                     <div id="dropdownAction"
                         class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownActionButton">
+                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
+                            aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                 <a href="#" @click="handleAction(key)"
                                     class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                                        value }}</a>
+                value }}</a>
                             </li>
                         </ul>
                     </div>
@@ -152,7 +160,8 @@ const submit = () => {
                     </div>
                     <TextInput type="text"
                         class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        v-model="form.search" placeholder="Tìm kiếm" autocomplete="search" @keyup="handleSearch($event)" />
+                        v-model="form.search" placeholder="Tìm kiếm" autocomplete="search"
+                        @keyup="handleSearch($event)" />
                 </div>
             </div>
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -245,11 +254,13 @@ const submit = () => {
 
                         <td class="px-2 py-4 w-52">
                             {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +
-                                order.ward.name }}
+                order.ward.name }}
                         </td>
 
                         <td class="px-6 py-4">
-                            {{ new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total) }}
+                            {{ new Intl.NumberFormat('vi-VN', {
+                style: 'currency', currency: 'VND'
+            }).format(order.total) }}
                         </td>
 
 
@@ -359,16 +370,16 @@ const submit = () => {
                                             </th>
                                             <td class="px-6 py-4 text-center">
                                                 {{ new Intl.NumberFormat('vi-VN', {
-                                                    style: 'currency', currency: 'VND'
-                                                }).format(product.pivot.quantity * product.pivot.price) }}
+                style: 'currency', currency: 'VND'
+            }).format(product.pivot.quantity * product.pivot.price) }}
                                             </td>
                                             <td class="px-6 py-4 text-center">
                                                 {{ product.pivot.quantity }}
                                             </td>
                                             <td class="px-6 py-4 text-center">
                                                 {{ new Intl.NumberFormat('vi-VN', {
-                                                    style: 'currency', currency:
-                                                        'VND'
+                style: 'currency', currency:
+                                                'VND'
                                                 }).format(product.pivot.quantity * product.pivot.price) }}
                                             </td>
                                         </tr>

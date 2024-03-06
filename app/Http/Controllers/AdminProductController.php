@@ -189,7 +189,16 @@ class AdminProductController extends Controller
 
     function delete($id)
     {
-        Product::destroy($id);
+        $product = Product::withTrashed()->find($id);
+
+        if ($product->deleted_at) {
+            if ($product->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($product->public_id_thumbnail);
+            }
+            $product->forceDelete();
+        } else {
+            $product->delete();
+        }
     }
 
     function action()

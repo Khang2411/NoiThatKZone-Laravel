@@ -93,7 +93,7 @@ const handleRemove = (id) => {
                 toast.remove(toastId.value)
                 toast.success('Xóa thành công!');
             },
-            onProgress: () => toastId.value = toast.loading('Loading...')
+            onStart: () => toastId.value = toast.loading('Loading...')
         });
     }
 }

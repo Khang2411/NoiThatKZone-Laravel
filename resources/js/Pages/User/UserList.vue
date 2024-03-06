@@ -84,7 +84,10 @@ const handleRemove = (id) => {
         }, {
             onSuccess: () => {
                 router.reload({ only: ['users,count'] })
-            }
+                toast.remove(toastId.value)
+                toast.success('Xóa thành công!');
+            },
+            onStart: () => { toastId.value = toast.loading('Loading...') }
         });
     }
 }

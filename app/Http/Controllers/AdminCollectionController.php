@@ -130,7 +130,17 @@ class AdminCollectionController extends Controller
 
     function delete($id)
     {
-        Collection::destroy($id);
+        $collection = Collection::withTrashed()->find($id);
+
+        if ($collection->deleted_at) {
+            if ($collection->public_id_banner !== null && $collection->public_id_thumbnail !== null) {
+                (new UploadApi())->destroy($collection->public_id_banner);
+                (new UploadApi())->destroy($collection->public_id_thumbnail);
+            }
+            $collection->forceDelete();
+        } else {
+            $collection->delete();
+        }
     }
 
     function action()

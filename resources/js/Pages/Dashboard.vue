@@ -49,7 +49,7 @@ const handleClickPdf = async () => {
             :orderByMonths="orderByMonths" :revenueByMonths="revenueByMonths"></ChartCard>
         <div class="mt-4 rounded-lg dark:border-gray-700">
             <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="rounded p-3 bg-gray-50 dark:bg-gray-800 dark:text-white">
+                <div class="rounded p-3 bg-gray-50 dark:bg-gray-800 dark:text-white col-span-3 md:col-span-1">
                     <div class="mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6">
@@ -68,7 +68,7 @@ const handleClickPdf = async () => {
                     </div>
                 </div>
 
-                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3">
+                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3 col-span-3 md:col-span-1">
                     <div class="mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6">
@@ -86,7 +86,8 @@ const handleClickPdf = async () => {
                         So với tháng trước tăng 100%
                     </div>
                 </div>
-                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3">
+
+                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3 hidden md:block">
                     <div class="flex justify-between items-center mb-2">
                         <div class="text-2xl font-bold mb-2">
                             Đánh giá gần đây
