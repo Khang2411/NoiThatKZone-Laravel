@@ -190,6 +190,113 @@ Route::prefix('v1')->group(function () {
         return response()->json(['data' => $products]);
     })->name('api-product.similar');
 
+    Route::get('/cities', function () {
+        $cities = City::all();
+        return response()->json(['data' => $cities]);
+    })->name('api-cities');
+
+    Route::get('/districts/{cityId}', function ($cityId) {
+        $districts = City::find($cityId)->districts;
+        return response()->json(['data' => $districts]);
+    })->name('api-districts.byCityID');
+
+    Route::get('/wards/{districtId}', function ($districtId) {
+        $wards = District::find($districtId)->wards;
+        return response()->json(['data' => $wards]);
+    })->name('api-wards.byDistrictID');
+
+    Route::get('/reviews', function () {
+        $reviews = Review::where('product_id', request()->product_id)
+            ->where('status', 'confirmed')->where('review_id', '=', null)
+            ->with('user', 'replies')->paginate(10);
+        foreach ($reviews as $review) {
+            foreach ($review['replies'] as $reply) {
+                $reply['user_name'] = User::find($reply['user_id'])->name;
+            }
+        }
+        return response()->json($reviews);
+    })->name('api-reviews.byProductId');
+
+    Route::post('/reviews/add', function () {
+        //return request()->product_id;
+        Review::create([
+            'product_id' => request()->product_id,
+            'content' => request()->review,
+            'user_id' => request()->user_id,
+            'rating' => request()->rating,
+            'status' => 'pending'
+        ]);
+    })->name('api-reviews.add');
+
+    Route::post('/reviews/reply', function () {
+        Review::create([
+            'product_id' => request()->product_id,
+            'user_id' => request()->user_id,
+            'review_id' => request()->review_id,
+            'content' => request()->reply,
+            'rating' => request()->rating,
+            'status' => 'pending'
+        ]);
+    })->name('api-reviews.add');
+
+    Route::get('/search/{search}', function ($search) {
+        $products = Product::where('name', 'LIKE', '%' . $search . '%')->get();
+        return response()->json(['data' => $products]);
+    })->name('api-search');
+
+    Route::post('account/email/update', function () {
+        $user = auth('sanctum')->user();
+        $user = User::find($user->id);
+        $user->email = request()->email;
+        if ($user->role_id != 1) {
+            $user->save();
+        }
+    })->name('api.account.email.update');
+
+    Route::post('account/phone/update', function () {
+        $user = auth('sanctum')->user();
+        $user = User::find($user->id);
+        $user->phone = request()->phone;
+        if ($user->role_id != 1) {
+            $user->save();
+        }
+    })->name('api.account.phone.update');
+
+    Route::post('account/password/update', function () {
+        $user = auth('sanctum')->user();
+        $user = User::find($user->id);
+        $user->password = Hash::make(request()->password);
+        if ($user->role_id != 1) {
+            $user->save();
+        }
+    })->name('api.account.password.update');
+
+    Route::post('account/address/update', function () {
+        $user = auth('sanctum')->user();
+        $user = User::find($user->id);
+        $user->phone = request()->phone;
+
+        $address = $user->address;
+
+        if (!isset($address->id)) {
+            Address::create([
+                'user_id' => $user->id,
+                'apartment_number' => request()->apartment_number,
+                'city_id' => request()->city_id,
+                'district_id' => request()->district_id,
+                'ward_id' => request()->ward_id
+            ]);
+        } else {
+            Address::find($address->id);
+            $address->apartment_number = request()->apartment_number;
+            $address->city_id = request()->city_id;
+            $address->district_id = request()->district_id;
+            $address->ward_id = request()->ward_id;
+            $address->save();
+        }
+        $user->save();
+    })->name('api.account.address.update');
+
     Route::post('/cart', function () {
         $productId = [];
         $total = 0;
@@ -325,114 +432,6 @@ Route::prefix('v1')->group(function () {
     })->name('checkout');
     Route::post('/checkout/vnpay', [AdminCheckOutController::class, 'vnpayCheckout'])->name('api.checkout.vnpay');
     Route::get('/checkout/vnpay/return', [AdminCheckOutController::class, 'vnpayCheckoutReturn'])->name('api.checkout.vnpay.return');
-
-
-    Route::get('/cities', function () {
-        $cities = City::all();
-        return response()->json(['data' => $cities]);
-    })->name('api-cities');
-
-    Route::get('/districts/{cityId}', function ($cityId) {
-        $districts = City::find($cityId)->districts;
-        return response()->json(['data' => $districts]);
-    })->name('api-districts.byCityID');
-
-    Route::get('/wards/{districtId}', function ($districtId) {
-        $wards = District::find($districtId)->wards;
-        return response()->json(['data' => $wards]);
-    })->name('api-wards.byDistrictID');
-
-    Route::get('/reviews', function () {
-        $reviews = Review::where('product_id', request()->product_id)
-            ->where('status', 'confirmed')->where('review_id', '=', null)
-            ->with('user', 'replies')->paginate(10);
-        foreach ($reviews as $review) {
-            foreach ($review['replies'] as $reply) {
-                $reply['user_name'] = User::find($reply['user_id'])->name;
-            }
-        }
-        return response()->json($reviews);
-    })->name('api-reviews.byProductId');
-
-    Route::post('/reviews/add', function () {
-        //return request()->product_id;
-        Review::create([
-            'product_id' => request()->product_id,
-            'content' => request()->review,
-            'user_id' => request()->user_id,
-            'rating' => request()->rating,
-            'status' => 'pending'
-        ]);
-    })->name('api-reviews.add');
-
-    Route::post('/reviews/reply', function () {
-        Review::create([
-            'product_id' => request()->product_id,
-            'user_id' => request()->user_id,
-            'review_id' => request()->review_id,
-            'content' => request()->reply,
-            'rating' => request()->rating,
-            'status' => 'pending'
-        ]);
-    })->name('api-reviews.add');
-
-    Route::get('/search/{search}', function ($search) {
-        $products = Product::where('name', 'LIKE', '%' . $search . '%')->get();
-        return response()->json(['data' => $products]);
-    })->name('api-search');
-
-    Route::post('account/email/update', function () {
-        $user = auth('sanctum')->user();
-        $user = User::find($user->id);
-        $user->email = request()->email;
-        if ($user->role_id != 1) {
-            $user->save();
-        }
-    })->name('api.account.email.update');
-
-    Route::post('account/phone/update', function () {
-        $user = auth('sanctum')->user();
-        $user = User::find($user->id);
-        $user->phone = request()->phone;
-        if ($user->role_id != 1) {
-            $user->save();
-        }
-    })->name('api.account.phone.update');
-
-    Route::post('account/password/update', function () {
-        $user = auth('sanctum')->user();
-        $user = User::find($user->id);
-        $user->password = Hash::make(request()->password);
-        if ($user->role_id != 1) {
-            $user->save();
-        }
-    })->name('api.account.password.update');
-
-    Route::post('account/address/update', function () {
-        $user = auth('sanctum')->user();
-        $user = User::find($user->id);
-        $user->phone = request()->phone;
-
-        $address = $user->address;
-
-        if (!isset($address->id)) {
-            Address::create([
-                'user_id' => $user->id,
-                'apartment_number' => request()->apartment_number,
-                'city_id' => request()->city_id,
-                'district_id' => request()->district_id,
-                'ward_id' => request()->ward_id
-            ]);
-        } else {
-            Address::find($address->id);
-            $address->apartment_number = request()->apartment_number;
-            $address->city_id = request()->city_id;
-            $address->district_id = request()->district_id;
-            $address->ward_id = request()->ward_id;
-            $address->save();
-        }
-        $user->save();
-    })->name('api.account.address.update');
 
     Route::get('order/list', function () {
         $user = auth('sanctum')->user();

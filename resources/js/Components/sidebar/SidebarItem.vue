@@ -63,8 +63,8 @@ import { Link } from '@inertiajs/vue3';
                 </Link>
             </li>
 
-            <!-- <li>
-                <Link :href="route('admin.banner')"
+            <li>
+                <Link :href="route('admin.banner.list')"
                     class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-6 h-6">
@@ -74,7 +74,7 @@ import { Link } from '@inertiajs/vue3';
 
                 <span class="flex-1 ms-3 whitespace-nowrap">Ảnh banner</span>
                 </Link>
-            </li> -->
+            </li>
 
             <li>
                 <button type="button"

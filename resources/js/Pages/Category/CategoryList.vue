@@ -1,17 +1,16 @@
 <script setup>
-import { ref } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import moment from "moment";
-import Paginate from '@/Components/Paginate.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import Paginate from '@/Components/Paginate.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
+import moment from "moment";
+import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
-import { router } from '@inertiajs/vue3'
-import { debounce } from 'lodash'
 
 const props = defineProps({
     categories: Object,

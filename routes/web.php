@@ -64,7 +64,10 @@ Route::middleware('auth', 'checkRole')->group(function () {
         Route::post('admin/posts/delete/{id}', [AdminPostController::class, 'delete'])->name('admin.post.delete');
     });
 
-    Route::get('admin/banner', [AdminBannerController::class, 'list'])->name('admin.banner');
+    Route::middleware('can:module.banners')->group(function () {
+        Route::get('admin/banner', [AdminBannerController::class, 'list'])->name('admin.banner.list');
+        Route::post('admin/update', [AdminBannerController::class, 'update'])->name('admin.banner.update');
+    });
 
     Route::middleware('can:module.reviews')->group(function () {
         Route::get('admin/reviews/list', [AdminReviewController::class, 'list'])->name('admin.review.list');
