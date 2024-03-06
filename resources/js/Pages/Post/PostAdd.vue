@@ -38,7 +38,7 @@ function filePicker(callback, value, meta) {
     var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
     var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
 
-    var cmsURL = 'http://127.0.0.1:8000/' + 'laravel-filemanager?editor=' + meta.fieldname;
+    var cmsURL = import.meta.env.VITE_SENTRY_DSN_PUBLIC + '/' + 'laravel-filemanager?editor=' + meta.fieldname;
     if (meta.filetype == 'image') {
         cmsURL = cmsURL + '&type=Images';
     } else { cmsURL = cmsURL + '&type=Files'; }
@@ -75,7 +75,7 @@ function filePicker(callback, value, meta) {
                     <InputError class="mt-2" :message="form.errors.thumbnail" />
                     <img v-if="previewThumbnailUrl" :src="previewThumbnailUrl" class="w-52 mt-4 h-52" />
                 </div>
-                <div class="mt-5 rounded ">
+                <div class="mt-5 rounded">
                     <InputLabel value="Nội dung bài viết" class="cursor-pointer mb-2" />
 
                     <Editor v-model="form.content" api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0" :init="{

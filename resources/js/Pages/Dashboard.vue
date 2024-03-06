@@ -1,11 +1,11 @@
 <script setup>
 import ChartCard from '@/Components/chart/ChartCard.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3'
-import 'moment/min/locales.min.js';
+import { Head, router } from '@inertiajs/vue3';
+import axios from "axios";
 import moment from "moment";
 import 'moment/dist/locale/vi';
+import 'moment/min/locales.min.js';
 moment.locale('vi')
 
 defineProps({
@@ -14,7 +14,9 @@ defineProps({
     order_number: Number,
     sumTotal: Number,
     product_number: Number,
-    user_number: Number
+    user_number: Number,
+    revenueByMonths: Array,
+    orderByMonths: Array,
 })
 
 const handleClickOrder = () => {
@@ -23,16 +25,28 @@ const handleClickOrder = () => {
 const handleClickReview = () => {
     router.visit(route('admin.review.list'), { preserveScroll: true })
 }
-// const handleClickPdf = () => {
-//     router.post(route('admin.dashboard.pdf'))
-// }
+const handleClickPdf = async () => {
+    const pdfDownload = await axios({
+        url: '/admin/statistic/pdf',
+        method: 'GET',
+        responseType: 'blob', // important
+    })
+    const url = window.URL.createObjectURL(new Blob([pdfDownload.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Thongkedoanhthu.pdf');
+    document.body.appendChild(link);
+    link.click();
+}
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <AuthenticatedLayout>
-        <ChartCard :product_number="product_number" :order_number="order_number" :user_number="user_number"></ChartCard>
+        <ChartCard :product_number="product_number" :order_number="order_number" :user_number="user_number"
+            :orderByMonths="orderByMonths" :revenueByMonths="revenueByMonths"></ChartCard>
         <div class="mt-4 rounded-lg dark:border-gray-700">
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div class="rounded p-3 bg-gray-50 dark:bg-gray-800 dark:text-white">
@@ -85,13 +99,15 @@ const handleClickReview = () => {
                         <div id="default-carousel" class="relative w-full" data-carousel="slide">
                             <div class="relative overflow-hidden rounded-lg md:h-36">
                                 <!-- Item 1 -->
-                                <div v-for="(review, index) in reviews" :key="index" class="hidden duration-700 ease-in-out"
-                                    data-carousel-item>
+                                <div v-for="(review, index) in reviews" :key="index"
+                                    class="hidden duration-700 ease-in-out" data-carousel-item>
                                     <article>
                                         <div class="flex items-center mb-4">
-                                            <div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full me-4">
-                                                <svg class="absolute w-12 h-12 text-gray-400 -left-1" fill="currentColor"
-                                                    viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <div
+                                                class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full me-4">
+                                                <svg class="absolute w-12 h-12 text-gray-400 -left-1"
+                                                    fill="currentColor" viewBox="0 0 20 20"
+                                                    xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd"
                                                         d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
                                                         clip-rule="evenodd">
@@ -180,7 +196,7 @@ const handleClickReview = () => {
             </div>
         </div>
         <div>
-            <!-- <div class="text-left">
+            <div class="text-left">
                 <button @click="handleClickPdf"
                     class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800">
                     <span
@@ -188,87 +204,93 @@ const handleClickReview = () => {
                         Xuất File PDF
                     </span>
                 </button>
-            </div> -->
+            </div>
             <div class="text-right">
                 <span class="text-orange-400 cursor-pointer" @click="handleClickOrder">Xem tất cả</span>
             </div>
 
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">
-                            Mã đơn
-                        </th>
+            <div class="relative overflow-x-auto">
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                Mã đơn
+                            </th>
 
-                        <th scope="col" class="px-6 py-3">
-                            Thời gian
-                        </th>
+                            <th scope="col" class="px-6 py-3">
+                                Thời gian
+                            </th>
 
-                        <th scope="col" class="px-6 py-3">
-                            Trạng thái
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Địa chỉ
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Tổng tiền
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(order, index) in orders" :key="index"
-                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <th scope="col" class="px-6 py-3">
+                                Trạng thái
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Địa chỉ
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Tổng tiền
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(order, index) in orders" :key="index"
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
 
-                        <th scope="row">
-                            <div class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                <div class="ps-3">
-                                    <span class="text-xs font-semibold">#{{ order.id }}</span>
+                            <th scope="row">
+                                <div
+                                    class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
+                                    <div class="ps-3">
+                                        <span class="text-xs font-semibold">#{{ order.id }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </th>
+                            </th>
 
-                        <td class="px-6 py-4">
-                            {{ moment(order.updated_at).fromNow() }}
-                        </td>
+                            <td class="px-6 py-4">
+                                {{ moment(order.updated_at).fromNow() }}
+                            </td>
 
-                        <td class="">
-                            <span v-if="order.status === 'processing'"
-                                class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                                Đang xử lí
-                            </span>
+                            <td>
+                                <span v-if="order.status === 'processing'"
+                                    class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                    Đang xử lí
+                                </span>
 
-                            <span v-else-if="order.status === 'pending'"
-                                class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                                Chờ thanh toán
-                            </span>
+                                <span v-else-if="order.status === 'pending'"
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                    Chờ thanh toán
+                                </span>
 
-                            <span v-else-if="order.status === 'confirmed'"
-                                class="bg-indigo-100 text-indigo-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300">
-                                Đã xác nhận
-                            </span>
+                                <span v-else-if="order.status === 'confirmed'"
+                                    class="bg-indigo-100 text-indigo-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300">
+                                    Đã xác nhận
+                                </span>
 
-                            <span v-else-if="order.status === 'completed'"
-                                class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                                Hoàn thành
-                            </span>
+                                <span v-else-if="order.status === 'completed'"
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                    Hoàn thành
+                                </span>
 
-                            <span v-else-if="order.status === 'cancelled'"
-                                class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-                                Đã hủy
-                            </span>
-                        </td>
+                                <span v-else-if="order.status === 'cancelled'"
+                                    class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                    Đã hủy
+                                </span>
+                            </td>
 
-                        <td class="px-2 py-4 w-52">
-                            {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +
-                                order.ward.name }}
-                        </td>
+                            <td class="px-2 py-4 w-52">
+                                {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +
+            order.ward.name }}
+                            </td>
 
-                        <td class="px-6 py-4">
-                            {{ new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <td class="px-6 py-4">
+                                {{ new Intl.NumberFormat('vi-VN', {
+            style: 'currency', currency: 'VND'
+        }).format(order.total) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
     </AuthenticatedLayout>

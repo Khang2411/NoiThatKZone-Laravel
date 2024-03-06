@@ -96,7 +96,7 @@ function filePicker(callback, value, meta) {
     var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
     var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
 
-    var cmsURL = 'http://127.0.0.1:8000/' + 'laravel-filemanager?editor=' + meta.fieldname;
+    var cmsURL = import.meta.env.VITE_SENTRY_DSN_PUBLIC + '/' + 'laravel-filemanager?editor=' + meta.fieldname;
     if (meta.filetype == 'image') {
         cmsURL = cmsURL + '&type=Images';
     } else { cmsURL = cmsURL + '&type=Files'; }

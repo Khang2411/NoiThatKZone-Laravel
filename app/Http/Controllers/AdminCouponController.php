@@ -54,8 +54,9 @@ class AdminCouponController extends Controller
                 'code' => 'required|unique:coupons,code,',
                 'name' => 'required',
                 'type' => 'required',
-                'amount' => 'required',
-                'minimum_spend' => 'nullable|integer'
+                'amount' => 'required|integer|gt:0',
+                'minimum_spend' => 'nullable|integer|gt:0',
+                'limit' => 'nullable|integer|gt:0'
             ],
             [
                 'name.required' => 'Tên là bắt buộc',
@@ -63,7 +64,12 @@ class AdminCouponController extends Controller
                 'code.unique' => 'Mã đã tồn tại',
                 'type.required' => 'Loại giảm giá bắt buộc',
                 'amount.required' => 'Số tiền giảm bắt buộc',
-                'minimum_spend.integer' => 'Chi tiêu tối thiểu phải là số'
+                'amount.integer' => 'Số tiền giảm phải là số',
+                'amount.gt' => 'Số tiền giảm không được nhỏ hơn 0',
+                'minimum_spend.integer' => 'Chi tiêu tối thiểu phải là số',
+                'minimum_spend.gt' => 'Chi tiêu tối thiểu không được nhỏ hơn 0',
+                'limit.integer' => 'Giới hạn phải là số',
+                'limit.gt' => 'Giới hạn không được nhỏ hơn 0'
             ]
         );
 
@@ -71,6 +77,12 @@ class AdminCouponController extends Controller
             if ($input['amount'] > 100) {
                 $validator->after(function ($validator) {
                     $validator->errors()->add('amount', 'Phần trăm từ 0 -> 100');
+                });
+            }
+        } else {
+            if ($input['amount'] < 1000) {
+                $validator->after(function ($validator) {
+                    $validator->errors()->add('amount', 'Số tiền giảm phải lớn hơn 1000 vnđ');
                 });
             }
         }
@@ -99,9 +111,9 @@ class AdminCouponController extends Controller
                 'code' => 'required|unique:coupons,code,' . $input['id'],
                 'name' => 'required',
                 'type' => 'required',
-                'amount' => 'required',
-                'minimum_spend' => 'nullable|integer',
-                'limit' => 'nullable|integer'
+                'amount' => 'required|integer|gt:0',
+                'minimum_spend' => 'nullable|integer|gt:0',
+                'limit' => 'nullable|integer|gt:0'
             ],
             [
                 'name.required' => 'Tên là bắt buộc',
@@ -109,7 +121,12 @@ class AdminCouponController extends Controller
                 'code.unique' => 'Mã đã tồn tại',
                 'type.required' => 'Loại giảm giá bắt buộc',
                 'amount.required' => 'Số tiền giảm bắt buộc',
-                'minimum_spend.integer' => 'Chi tiêu tối thiểu phải là số'
+                'amount.integer' => 'Số tiền giảm phải là số',
+                'amount.gt' => 'Số tiền giảm không được nhỏ hơn 0',
+                'minimum_spend.integer' => 'Chi tiêu tối thiểu phải là số',
+                'minimum_spend.gt' => 'Chi tiêu tối thiểu không được nhỏ hơn 0',
+                'limit.integer' => 'Giới hạn phải là số',
+                'limit.gt' => 'Giới hạn không được nhỏ hơn 0'
             ]
         );
 
@@ -117,6 +134,12 @@ class AdminCouponController extends Controller
             if ($input['amount'] > 100) {
                 $validator->after(function ($validator) {
                     $validator->errors()->add('amount', 'Phần trăm từ 0 -> 100');
+                });
+            }
+        } else {
+            if ($input['amount'] < 1000) {
+                $validator->after(function ($validator) {
+                    $validator->errors()->add('amount', 'Số tiền giảm phải lớn hơn 1000 vnđ');
                 });
             }
         }

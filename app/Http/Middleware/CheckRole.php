@@ -19,7 +19,9 @@ class CheckRole
 
         if (auth()->check()) {
             $user = auth()->user();
-            if ($user->role->name === 'Customer') {
+            if ($user?->role?->permissions->count() > 0 || $user->role->name === "Admin") {
+                return $next($request);
+            } else {
                 Auth::guard('web')->logout();
                 return redirect('/');
             }

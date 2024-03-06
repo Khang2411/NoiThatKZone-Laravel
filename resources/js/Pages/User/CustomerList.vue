@@ -218,7 +218,7 @@ const submit = () => {
                         </th>
 
                         <td class="px-6 py-4">
-                            {{ (user.role.name) }}
+                            {{ (user.role?.name)  }}
                         </td>
 
                         <td class="px-6 py-4">

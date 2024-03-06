@@ -25,6 +25,7 @@ use App\Models\Cart;
 use App\Models\CartDetail;
 use App\Models\Post;
 use App\Models\Slider;
+use Illuminate\Support\Facades\Crypt;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,7 +88,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/register', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
         $user = User::create([
@@ -507,8 +508,7 @@ Route::prefix('v1')->group(function () {
     })->name('api-post-details');
 
     Route::post('/social/login', function () {
-
-        $user = User::where('provider_id', request()->provider_id)->first();
+        $user = User::where('provider_id', request()->provider_id)->orWhere('email', request()->email)->first();
 
         if (!isset($user)) {
             $user = User::create([
@@ -516,19 +516,19 @@ Route::prefix('v1')->group(function () {
                 'email' => request()->email ? request()->email : "",
                 'password' =>  Hash::make(request()->provider_id),
                 'phone' => '',
-                'role_id' => '3',
                 'provider_id' => request()->provider_id,
                 'provider_type' => request()->provider
             ]);
         }
 
-        if (Auth::attempt(
-            [
-                'provider_id' => $user->provider_id,
-                'password' => $user->provider_id
-            ]
-        )) {
-            $user = Auth::user();
+        if (isset($user) && $user->provider_id === null) {
+            $user = User::find($user->id);
+            $user->provider_id = request()->provider_id;
+            $user->provider_type = request()->provider;
+            $user->save();
+        }
+
+        if ($user) {
             $data['token'] = $user->createToken('accessToken')->plainTextToken;
             return response()->json(['data' => $data], 200);
         } else {

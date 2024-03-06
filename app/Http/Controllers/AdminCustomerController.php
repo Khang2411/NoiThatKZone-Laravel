@@ -20,7 +20,7 @@ class AdminCustomerController extends Controller
     {
         $list_action = ['delete' => 'Xóa tạm thời'];
         if (request()->status === 'trash') {
-            $users = User::onlyTrashed()->where('role_id', '3')->with('role')
+            $users = User::onlyTrashed()->where('role_id', null)->with('role')
                 ->when(request()->search, function ($q) {
                     return $q->where('name', 'LIKE', '%' . request()->search . '%');
                 })->orderBy("id", "DESC")->paginate(10);
@@ -28,15 +28,15 @@ class AdminCustomerController extends Controller
             $users->appends(['status' => 'trash']); // page 2 continue status=trash
             $list_action = ['restore' => 'Khôi phục', 'force_delete' => 'Xóa vĩnh viễn'];
         } else {
-            $users = User::where('role_id', '3')->with('role')
+            $users = User::where('role_id', null)->with('role')
                 ->when(request()->search, function ($q) {
                     return $q->where('name', 'LIKE', '%' . request()->search . '%');
                 })->orderBy("id", "DESC")->paginate(10);
 
             $users->appends(['status' => 'active']);
         }
-        $count_order_active = User::where('role_id', '3')->count();
-        $count_order_trash = User::where('role_id', '3')->onlyTrashed()->count();
+        $count_order_active = User::where('role_id', null)->count();
+        $count_order_trash = User::where('role_id', null)->onlyTrashed()->count();
         $count = [$count_order_active, $count_order_trash];
         $roles = Role::all();
         return Inertia::render('User/CustomerList', ['users' => $users, 'list_action' => $list_action, 'roles' => $roles, 'count' => $count]);

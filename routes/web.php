@@ -40,7 +40,7 @@ Route::get('/', function () {
     ]);
 });
 
-// Route::get('/test', [TestController::class, 'test']);
+//Route::get('/test', [AdminDashboardController::class, 'pdf']);
 
 Route::middleware('auth', 'checkRole')->group(function () {
     Route::group(['prefix' => 'laravel-filemanager'], function () {
@@ -48,6 +48,7 @@ Route::middleware('auth', 'checkRole')->group(function () {
     });
 
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/admin/statistic/pdf', [AdminDashboardController::class, 'pdf'])->name('admin.statistic.pdf');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -140,7 +141,6 @@ Route::middleware('auth', 'checkRole')->group(function () {
         Route::post('admin/role/delete/{id}', [AdminRoleController::class, 'delete'])->name('admin.role.delete');
         Route::post('admin/role/action', [AdminRoleController::class, 'action'])->name('admin.role.action');
     });
-    // Route::post('admin/order/update', [AdminDashboardController::class, 'pdf'])->name('admin.dashboard.pdf');
 });
 
 require __DIR__ . '/auth.php';
