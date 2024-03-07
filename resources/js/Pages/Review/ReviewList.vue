@@ -211,9 +211,9 @@ const submit = () => {
                         <th scope="row">
                             <div class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
                                 <div class="ps-3">
-                                    <div v-if="review.user.role_id != 3">
+                                    <div v-if="review.user.role_id !== null">
                                         <span
-                                            class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Admin</span>
+                                            class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Quản trị viên</span>
                                     </div>
                                     <span class="text-xs font-semibold">{{ review.user.name }}</span>
                                 </div>

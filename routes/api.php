@@ -19,13 +19,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Auth\Events\Registered;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Models\Banner;
 use App\Models\Cart;
 use App\Models\CartDetail;
 use App\Models\Post;
 use App\Models\Slider;
-use Illuminate\Support\Facades\Crypt;
 
 /*
 |--------------------------------------------------------------------------
