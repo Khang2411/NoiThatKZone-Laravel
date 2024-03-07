@@ -87,7 +87,7 @@ const handleClickPdf = async () => {
                     </div>
                 </div>
 
-                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3 hidden md:block">
+                <div class="rounded bg-gray-50 dark:bg-gray-800 dark:text-white p-3 col-span-3 md:col-span-1">
                     <div class="flex justify-between items-center mb-2">
                         <div class="text-2xl font-bold mb-2">
                             Đánh giá gần đây
@@ -98,7 +98,7 @@ const handleClickPdf = async () => {
                     </div>
                     <div class="font-bold mb-2">
                         <div id="default-carousel" class="relative w-full" data-carousel="slide">
-                            <div class="relative overflow-hidden rounded-lg md:h-36">
+                            <div class="relative overflow-hidden rounded-lg h-48 md:h-36">
                                 <!-- Item 1 -->
                                 <div v-for="(review, index) in reviews" :key="index"
                                     class="hidden duration-700 ease-in-out" data-carousel-item>

@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -19,7 +18,7 @@ class AdminDashboardController extends Controller
     {
         $yearNow = Carbon::now()->year;
         $sumTotal = 0;
-        $ordersByMonth = Order::with('products', 'city', 'district', 'ward', 'user')->where('updated_at', '>=',  now()->subMonth())->get();
+        $ordersByMonth = Order::with('products', 'city', 'district', 'ward', 'user')->where('updated_at', '>=',  now()->subMonth())->where('status', '!=', 'cancelled')->get();
 
         foreach ($ordersByMonth as $order) {
             $total = 0;
@@ -38,8 +37,8 @@ class AdminDashboardController extends Controller
         // Revenue By Months Year Now
         $sumRevenue = 0;
         for ($i = 1; $i <= 12; $i++) {
-            $orders = Order::whereYear('updated_at', $yearNow)->with('products')
-                ->whereMonth('updated_at', $i)->get();
+            $orders = Order::whereYear('updated_at', $yearNow)->whereMonth('updated_at', $i)->where('status', '!=', 'cancelled')->with('products')
+                ->get();
             foreach ($orders as $order) {
                 $total = 0;
                 foreach ($order->products as $product) {
@@ -57,9 +56,10 @@ class AdminDashboardController extends Controller
             $revenueByMonths[] = $orders->count() === 0 ? 0 : $sumRevenue;
             $sumRevenue = 0;
         }
+
         // Count order By Month
         for ($i = 1; $i <= 12; $i++) {
-            $orderByMonths[] = Order::whereMonth('updated_at', $i)->count();
+            $orderByMonths[] = Order::whereYear('updated_at', $yearNow)->whereMonth('updated_at', $i)->count();
         };
 
         $products = Product::where('updated_at', '>=',  now()->subMonth())->get();
@@ -143,8 +143,8 @@ class AdminDashboardController extends Controller
         // Revenue By Months Year Now
         $sumRevenue = 0;
         for ($i = 1; $i <= 12; $i++) {
-            $orders = Order::whereYear('updated_at', $yearNow)->with('products')
-                ->whereMonth('updated_at', $i)->get();
+            $orders = Order::whereYear('updated_at', $yearNow)->whereMonth('updated_at', $i)->where('status', '!=', 'cancelled')->with('products')
+                ->get();
             foreach ($orders as $order) {
                 $total = 0;
                 foreach ($order->products as $product) {
@@ -167,7 +167,7 @@ class AdminDashboardController extends Controller
         $revenueByYears = [];
         $sumRevenueYear = 0;
         foreach ($years as $year) {
-            $orders = Order::whereYear('updated_at', $year)->with('products')->get();
+            $orders = Order::whereYear('updated_at', $year)->where('status', '!=', 'cancelled')->with('products')->get();
             foreach ($orders as $order) {
                 $total = 0;
                 foreach ($order->products as $product) {
