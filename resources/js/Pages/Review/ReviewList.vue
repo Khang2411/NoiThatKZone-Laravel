@@ -213,7 +213,8 @@ const submit = () => {
                                 <div class="ps-3">
                                     <div v-if="review.user.role_id !== null">
                                         <span
-                                            class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Quản trị viên</span>
+                                            class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Quản
+                                            trị viên</span>
                                     </div>
                                     <span class="text-xs font-semibold">{{ review.user.name }}</span>
                                 </div>
@@ -252,16 +253,16 @@ const submit = () => {
 
                         <td class="px-6 py-4 ">
                             <div class="flex items-center">
-                                <a v-if="queryParam != 'trash'" href="#" type="button" @click="handleModal(review)"
+                                <a v-if="queryParam != 'trash'" type="button" @click="handleModal(review)"
                                     data-modal-target="editUserModal" data-modal-show="editUserModal"
-                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </a>
-                                <a href="#" @click="handleRemove(review.id)">
+                                <a @click="handleRemove(review.id)" class="cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"

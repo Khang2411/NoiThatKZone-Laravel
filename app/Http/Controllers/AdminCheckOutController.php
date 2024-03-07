@@ -43,6 +43,7 @@ class AdminCheckOutController extends Controller
         $order = Order::create([
             'user_id' => $params['order']['user_id'],
             'phone' => $params['order']['phone'],
+            'email' => $params['order']['email'],
             'ship_address' => $params['order']['ship_address'],
             'ship_name' => $params['order']['ship_name'],
             'method' => $params['order']['method'],
@@ -126,8 +127,9 @@ class AdminCheckOutController extends Controller
             $order->status = 'processing';
             $order->momo_id =  $result['id'];
             $order->save();
+            $localOrderEmail = $order->email;
+            SendOrderMail::dispatch($order->user_id, $order, $localOrderEmail);
         }
-        SendOrderMail::dispatch($order->user_id, $order);
         Cart::where('user_id', $order->user_id)->delete();
         return redirect("http://localhost:3000/order-success?{$params}");
     }
@@ -215,13 +217,13 @@ class AdminCheckOutController extends Controller
         }
 
         if (request()->vnp_ResponseCode === '00') {
-            $order = Order::find(request()->order_id);
-
             $order->status = 'processing';
             $order->vnpay_id =  $result['id'];
             $order->save();
+            $localOrderEmail = $order->email;
+            SendOrderMail::dispatch($order->user_id, $order, $localOrderEmail);
         }
-        SendOrderMail::dispatch($order->user_id, $order);
+        Cart::where('user_id', $order->user_id)->delete();
         return redirect("http://localhost:3000/order-success?{$params}");
     }
 }

@@ -15,6 +15,7 @@ use Cloudinary\Api\Upload\UploadApi;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Jobs\SendMail;
+use App\Models\Cart;
 
 class TestController extends Controller
 {
@@ -26,6 +27,5 @@ class TestController extends Controller
     // foreach ($users as $user) {
     //   SendMail::dispatch($user);
     // }
-    return  User::find(1)->email;
   }
 }

@@ -18,13 +18,15 @@ class SendOrderMail implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $userId;
     protected $order;
+    protected $localOrderMail;
     /**
      * Create a new job instance.
      */
-    public function __construct($userId, $order)
+    public function __construct($userId, $order, $localOrderMail)
     {
         $this->userId = $userId;
         $this->order = $order;
+        $this->localOrderMail = $localOrderMail;
     }
 
     /**
@@ -32,7 +34,7 @@ class SendOrderMail implements ShouldQueue
      */
     public function handle(): void
     {
-        $email=User::find($this->userId)->email;
-        Mail::to($email)->send(new OrderConfirmed($this->order));
+        $email = $this->localOrderMail ? null : User::find($this->userId)->email;
+        Mail::to($email ? $email : $this->localOrderMail)->send(new OrderConfirmed($this->order));
     }
 }

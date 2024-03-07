@@ -30,6 +30,8 @@ const discount = ref()
 const couponType = ref()
 const toastId = ref('');
 
+const productsObserver = ref([...props.products.data]);
+
 const listStatus = [{
     id: 'completed',
     name: 'Hoàn thành'
@@ -51,7 +53,7 @@ const listStatus = [{
 
 const form = useForm({
     id: props.order.id,
-    email: props.order.user?.email,
+    email: props.order.email,
     method: props.order.method,
     status: props.order.status,
     phone: props.order.phone,
@@ -69,7 +71,7 @@ const form = useForm({
 
 const getItems = async () => {
     const getProducts = await axios.get(props.products.next_page_url)
-    props.products.data = [...props.products.data, ...getProducts.data.data]
+    productsObserver.value = [...productsObserver.value, ...getProducts.data.data]
     props.products.next_page_url = getProducts.data.next_page_url
 }
 
@@ -148,6 +150,7 @@ const handleIncrement = (id) => {
 }
 
 const handleAddProduct = (product) => {
+
     console.log(props.order.subtotal)
     product['pivot'] = { price: product.price, quantity: 1 }
     console.log(props.order)
@@ -452,7 +455,7 @@ const submit = () => {
                                             @keyup="handleSearch($event)" />
                                     </div>
                                     <div class="mt-5">
-                                        <div v-for="(product, index) in products.data" :key="index"
+                                        <div v-for="(product, index) in productsObserver" :key="index"
                                             class="flex mb-5 p-5 shadow-lg border border-[#454c59] gap-5">
                                             <div>
                                                 <img class="w-14 h-14" :src=product.thumbnail alt="product" />

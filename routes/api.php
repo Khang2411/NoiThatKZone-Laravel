@@ -24,6 +24,7 @@ use App\Models\Cart;
 use App\Models\CartDetail;
 use App\Models\Post;
 use App\Models\Slider;
+use App\Jobs\SendOrderMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -414,7 +415,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/checkout', function () {
         $order = Order::create([
             'user_id' => request()->order['user_id'],
+            'email' => request()->order['email'],
             'phone' => request()->order['phone'],
+            'ship_name' => request()->order['ship_name'],
             'ship_address' => request()->order['ship_address'],
             'method' => request()->order['method'],
             'status' => request()->order['status'],
@@ -423,12 +426,15 @@ Route::prefix('v1')->group(function () {
             'ward_id' => request()->order['ward_id'],
             'discount' => request()->order['discount'],
         ]);
-        $order = Order::find($order->id);
+        // $order = Order::find($order->id);
         foreach (request()->product as $product) {
             $order->products()->attach($product['id'], ['quantity' => $product['quantity'], 'price' => $product['price']]);
         }
+        $localOrderEmail = $order->email;
+        SendOrderMail::dispatch($order->user_id, $order, $localOrderEmail);
         return response()->json($order);
     })->name('checkout');
+
     Route::post('/checkout/vnpay', [AdminCheckOutController::class, 'vnpayCheckout'])->name('api.checkout.vnpay');
     Route::get('/checkout/vnpay/return/{order}', [AdminCheckOutController::class, 'vnpayCheckoutReturn'])->name('api.checkout.vnpay.return');
 
