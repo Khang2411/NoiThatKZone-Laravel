@@ -208,10 +208,6 @@ const submit = () => {
                         </td>
                         <th scope="row">
                             <div class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                <div
-                                    class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-                                    <span class="font-medium text-gray-600 dark:text-gray-300">{{ user.name }}</span>
-                                </div>
                                 <div class="ps-3">
                                     <span class="text-xs font-semibold">{{ user.name }}</span>
                                     <div class="font-normal text-gray-500">{{ user.email }}</div>

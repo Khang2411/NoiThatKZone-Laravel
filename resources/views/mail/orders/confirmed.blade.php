@@ -228,7 +228,7 @@
                                                         <tr>
                                                             <td class="pad" style="padding-right:60px;text-align:center;width:100%;">
                                                                 <h1 style="margin: 0; font-weight: 500; color: #eb93aa; direction: ltr; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 25px; letter-spacing: normal; line-height: 150%; text-align: left; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 30.5px;">
-                                                                    <span class="tinyMce-placeholder">Đơn hàng đã được xác nhận</span>
+                                                                    <span class="tinyMce-placeholder">Đơn hàng đã được đặt thành công</span>
                                                                 </h1>
                                                             </td>
                                                         </tr>

@@ -16,14 +16,14 @@ use App\Models\User;
 class SendOrderMail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $email;
+    protected $userId;
     protected $order;
     /**
      * Create a new job instance.
      */
-    public function __construct($email, $order)
+    public function __construct($userId, $order)
     {
-        $this->email = $email;
+        $this->userId = $userId;
         $this->order = $order;
     }
 
@@ -32,6 +32,7 @@ class SendOrderMail implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->email)->send(new OrderConfirmed($this->order));
+        $email=User::find($this->userId)->email;
+        Mail::to($email)->send(new OrderConfirmed($this->order));
     }
 }

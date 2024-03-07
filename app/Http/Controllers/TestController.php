@@ -21,9 +21,11 @@ class TestController extends Controller
 
   function test()
   {
-    $users = User::whereIn('id', [1])->get();
-    foreach ($users as $user) {
-      SendMail::dispatch($user);
-    }
+    // $users = User::whereIn('id', [1])->get();
+    // return $users;
+    // foreach ($users as $user) {
+    //   SendMail::dispatch($user);
+    // }
+    return  User::find(1)->email;
   }
 }
