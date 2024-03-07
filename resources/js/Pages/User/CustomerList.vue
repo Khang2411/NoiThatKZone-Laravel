@@ -145,11 +145,12 @@ const submit = () => {
                             aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                 <a href="#" @click="handleAction(key)"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                value }}</a>
+                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                    {{ value }}</a>
                             </li>
                         </ul>
                     </div>
+                    
                 </div>
                 <label for="table-search" class="sr-only">Search</label>
                 <div class="relative">
@@ -165,6 +166,9 @@ const submit = () => {
                         v-model="form.search" placeholder="Tìm kiếm tên khách hàng" @keyup="handleSearch($event)"
                         autocomplete="search" />
                 </div>
+            </div>
+            <div>
+                
             </div>
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -218,7 +222,7 @@ const submit = () => {
                         </th>
 
                         <td class="px-6 py-4">
-                            {{ (user.role?.name)  }}
+                            {{ (user.role?.name) }}
                         </td>
 
                         <td class="px-6 py-4">

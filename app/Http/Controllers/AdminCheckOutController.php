@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendOrderMail;
 use App\Models\Momo;
 use App\Models\Order;
 use App\Models\Vnpay;
@@ -60,7 +61,6 @@ class AdminCheckOutController extends Controller
 
     public function momoCheckout()
     {
-        $order = $this->addOrder(request()->all());
         $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 
         $partnerCode = 'MOMOBKUN20180529';
@@ -69,7 +69,7 @@ class AdminCheckOutController extends Controller
         $orderInfo = "Thanh toán qua MoMo";
         $amount = request()->total;
         $orderId = time() . "";
-        $redirectUrl = route('api.checkout.momo.return', ['order_id' =>  $order['id']]);
+        $redirectUrl = route('api.checkout.momo.return', $order['id']);
         $ipnUrl = route('api.checkout.momo.return');
         $extraData = '';
 
@@ -96,11 +96,12 @@ class AdminCheckOutController extends Controller
         $result = $this->execPostRequest($endpoint, json_encode($data));
         $jsonResult = json_decode($result, true);  // decode json
         //Just a example, please check more in there
+        $order = $this->addOrder(request()->all());
         return response()->json(['redirect' =>  $jsonResult['payUrl']]);
         //return Inertia::location($jsonResult['payUrl']);
     }
 
-    function momoCheckoutReturn()
+    function momoCheckoutReturn(Order $order)
     {
         $params = http_build_query(request()->all());
 
@@ -120,23 +121,21 @@ class AdminCheckOutController extends Controller
         }
 
         if (request()->resultCode === '0') {
-            $order = Order::find(request()->order_id);
-
             $order->status = 'processing';
             $order->momo_id =  $result['id'];
             $order->save();
         }
+        SendOrderMail::dispatch($order->user_id, $order);
         return redirect("http://localhost:3000/order-success?{$params}");
     }
 
     function vnpayCheckout()
     {
         date_default_timezone_set('Asia/Ho_Chi_Minh');
-        $order = $this->addOrder(request()->all());
         $vnp_TmnCode = "VHTIVTCQ"; //Mã định danh merchant kết nối (Terminal Id)
         $vnp_HashSecret = "BCEMOZWQJQTKETOIDJNKWPRYMRQXGNAZ"; //Secret key
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = route('api.checkout.vnpay.return', ['order_id' =>  $order['id']]);
+        $vnp_Returnurl = route('api.checkout.vnpay.return', $order['id']);
         // $vnp_apiUrl = "http://sandbox.vnpayment.vn/merchant_webapi/merchant.html";
         // $apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
@@ -184,13 +183,14 @@ class AdminCheckOutController extends Controller
 
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
-            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret); 
+            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);
             $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
         }
+        $order = $this->addOrder(request()->all());
         return response()->json(['redirect' =>   $vnp_Url]);
     }
 
-    function vnpayCheckoutReturn()
+    function vnpayCheckoutReturn(Order $order)
     {
         $params = http_build_query(request()->all());
 
@@ -218,6 +218,7 @@ class AdminCheckOutController extends Controller
             $order->vnpay_id =  $result['id'];
             $order->save();
         }
+        SendOrderMail::dispatch($order->user_id, $order);
         return redirect("http://localhost:3000/order-success?{$params}");
     }
 }

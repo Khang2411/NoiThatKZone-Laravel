@@ -40,7 +40,7 @@ Route::get('/', function () {
     ]);
 });
 
-//Route::get('/test', [AdminDashboardController::class, 'pdf']);
+Route::get('/test', [TestController::class, 'test']);
 
 Route::middleware('auth', 'checkRole')->group(function () {
     Route::group(['prefix' => 'laravel-filemanager'], function () {

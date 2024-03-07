@@ -409,7 +409,8 @@ Route::prefix('v1')->group(function () {
     })->name('api-cart-coupon');
 
     Route::post('/checkout/momo', [AdminCheckOutController::class, 'momoCheckout'])->name('api.checkout.momo');
-    Route::get('/checkout/momo/return', [AdminCheckOutController::class, 'momoCheckoutReturn'])->name('api.checkout.momo.return');
+    Route::get('/checkout/momo/return/{order}', [AdminCheckOutController::class, 'momoCheckoutReturn'])->name('api.checkout.momo.return');
+
     Route::post('/checkout', function () {
         $order = Order::create([
             'user_id' => request()->order['user_id'],
@@ -429,7 +430,7 @@ Route::prefix('v1')->group(function () {
         return response()->json($order);
     })->name('checkout');
     Route::post('/checkout/vnpay', [AdminCheckOutController::class, 'vnpayCheckout'])->name('api.checkout.vnpay');
-    Route::get('/checkout/vnpay/return', [AdminCheckOutController::class, 'vnpayCheckoutReturn'])->name('api.checkout.vnpay.return');
+    Route::get('/checkout/vnpay/return/{order}', [AdminCheckOutController::class, 'vnpayCheckoutReturn'])->name('api.checkout.vnpay.return');
 
     Route::get('order/list', function () {
         $user = auth('sanctum')->user();

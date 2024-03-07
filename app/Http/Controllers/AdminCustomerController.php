@@ -13,12 +13,13 @@ use Illuminate\Validation\Rules;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Jobs\SendMail;
 
 class AdminCustomerController extends Controller
 {
     function list()
     {
-        $list_action = ['delete' => 'Xóa tạm thời'];
+        $list_action = ['delete' => 'Xóa tạm thời', 'send_mail' => 'Gửi mail'];
         if (request()->status === 'trash') {
             $users = User::onlyTrashed()->where('role_id', null)->with('role')
                 ->when(request()->search, function ($q) {
@@ -99,6 +100,11 @@ class AdminCustomerController extends Controller
                 return redirect()->back()->with(['status' => 'Xóa vĩnh viễn thành công']);
             } else if (request()->action == '') {
                 return redirect()->back()->with(['status' => 'Chưa chọn tác vụ nào']);
+            } else if (request()->action == 'send_mail') {
+                $users = User::whereIn('id', $list_check)->get();
+                foreach ($users as $user) {
+                    SendMail::dispatch($user);
+                }
             }
         }
     }
