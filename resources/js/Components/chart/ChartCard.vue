@@ -34,7 +34,7 @@ onMounted(() => {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#ffffff'
+                        color: '#42a3a6'
                     }
                 }
             },
@@ -63,7 +63,7 @@ onMounted(() => {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#ffffff'
+                        color: '#42a3a6'
                     }
                 }
             },
@@ -98,7 +98,7 @@ onMounted(() => {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#ffffff'
+                        color: '#42a3a6'
                     }
                 }
             },

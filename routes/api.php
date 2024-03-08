@@ -25,7 +25,8 @@ use App\Models\CartDetail;
 use App\Models\Post;
 use App\Models\Slider;
 use App\Jobs\SendOrderMail;
-
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -94,7 +95,7 @@ Route::prefix('v1')->group(function () {
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'role_id' => '3',
+            'role_id' => null,
             'password' => Hash::make($request->password),
         ]);
         // event(new Registered($user));
@@ -112,6 +113,24 @@ Route::prefix('v1')->group(function () {
         $address = User::find($id)->address;
         return response()->json($address);
     })->name('api.address');
+
+    Route::post('/forgot-password', function () {
+        request()->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            request()->only('email')
+        );
+
+        if ($status == Password::RESET_LINK_SENT) {
+            return back()->with('status', __($status));
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
+    });
 
     Route::get('/home/collections', function () {
         $collections = Collection::where('collection_id', '=', null)->with('collections')->get();

@@ -34,6 +34,5 @@ export default {
             // => @media (min-width: 1536px) { ... }
         }
     },
-
     plugins: [ require('flowbite/plugin'), forms],
 };

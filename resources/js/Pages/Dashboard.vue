@@ -47,6 +47,7 @@ const handleClickPdf = async () => {
     <AuthenticatedLayout>
         <ChartCard :product_number="product_number" :order_number="order_number" :user_number="user_number"
             :orderByMonths="orderByMonths" :revenueByMonths="revenueByMonths"></ChartCard>
+
         <div class="mt-4 rounded-lg dark:border-gray-700">
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div class="rounded p-3 bg-gray-50 dark:bg-gray-800 dark:text-white col-span-3 md:col-span-1">

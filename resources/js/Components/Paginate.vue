@@ -18,7 +18,7 @@ defineProps({
                     <Link v-if="link.url" class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded 
                         hover:bg-white focus:border-indigo-500 focus:text-indigo-500 dark:bg-gray-800 dark:border-gray-700 
                         dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                        :class="{ 'bg-blue-700 text-white hover:bg-blue-700 dark:bg-[#435a80]': link.active }" :href="link.url" v-html="link.label" />
+                        :class="{ 'bg-blue-700 text-white hover:bg-blue-700 dark:bg-[#355998]': link.active }" :href="link.url" v-html="link.label" />
                 </template>
             </div>
         </div>
