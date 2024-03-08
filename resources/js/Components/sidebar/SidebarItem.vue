@@ -36,7 +36,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-blog" class="hidden py-2 space-y-2">
+                <ul id="dropdown-blog" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/posts') }">
                     <li>
                         <Link :href="route('admin.post.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -93,7 +94,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-collection" class="hidden py-2 space-y-2">
+                <ul id="dropdown-collection" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/collection') }">
                     <li>
                         <Link :href="route('admin.collection.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -124,7 +126,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-category" class="hidden py-2 space-y-2">
+                <ul id="dropdown-category" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/category') }">
                     <li>
                         <Link :href="route('admin.category.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -155,7 +158,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-coupon" class="hidden py-2 space-y-2">
+                <ul id="dropdown-coupon" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/coupon') }">
                     <li>
                         <Link :href="route('admin.coupon.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -187,7 +191,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-product" class="hidden py-2 space-y-2">
+                <ul id="dropdown-product" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/product') }">
                     <li>
                         <Link :href="route('admin.product.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -218,12 +223,13 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-order" class="hidden py-2 space-y-2">
-                    <!-- <li>
-                        <Link :href="route('admin.product.add.view')"
+                <ul id="dropdown-order" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/order') }">
+                    <li>
+                        <Link :href="route('admin.order.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                         Thêm đơn đặt hàng</Link>
-                    </li> -->
+                    </li>
                     <li>
                         <Link :href="route('admin.order.list')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -249,7 +255,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-user" class="hidden py-2 space-y-2">
+                <ul id="dropdown-user" class="py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/user') || !$page.url.startsWith('/admin/customer') }">
                     <li>
                         <Link :href="route('admin.user.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -286,7 +293,8 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-permission" class="hidden py-2 space-y-2">
+                <ul id="dropdown-permission" class="hidden py-2 space-y-2"
+                    :class="{ 'hidden': !$page.url.startsWith('/admin/role') }">
                     <li>
                         <Link :href="route('admin.role.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">

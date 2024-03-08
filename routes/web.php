@@ -103,7 +103,7 @@ Route::middleware('auth', 'checkRole')->group(function () {
 
     Route::middleware('can:module.products')->group(function () {
         Route::get('admin/product/list', [AdminProductController::class, 'list'])->name('admin.product.list');
-        Route::get('/product/add', [AdminProductController::class, 'add'])->name('admin.product.add.view');
+        Route::get('admin/product/add', [AdminProductController::class, 'add'])->name('admin.product.add.view');
         Route::post('admin/product/store', [AdminProductController::class, 'store'])->name('admin.product.store');
         Route::post('admin/product/update', [AdminProductController::class, 'update'])->name('admin.product.update');
         Route::post('admin/product/action', [AdminProductController::class, 'action'])->name('admin.product.action');
@@ -114,6 +114,8 @@ Route::middleware('auth', 'checkRole')->group(function () {
         Route::get('admin/order/list', [AdminOrderController::class, 'list'])->name('admin.order.list');
         Route::post('admin/order/action', [AdminOrderController::class, 'action'])->name('admin.order.action');
         Route::get('admin/order/edit', [AdminOrderController::class, 'edit'])->name('admin.order.edit');
+        Route::get('admin/order/add', [AdminOrderController::class, 'add'])->name('admin.order.add.view');
+        Route::post('admin/order/store', [AdminOrderController::class, 'store'])->name('admin.order.store');
         Route::post('admin/order/update', [AdminOrderController::class, 'update'])->name('admin.order.update');
         Route::post('admin/order/delete/{id}', [AdminOrderController::class, 'delete'])->name('admin.order.delete');
     });

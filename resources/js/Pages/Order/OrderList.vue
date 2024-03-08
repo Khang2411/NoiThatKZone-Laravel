@@ -253,17 +253,12 @@ const submit = () => {
                         </td>
 
                         <td class="px-2 py-4 w-52">
-                            {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +
-                order.ward.name }}
+                            {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +order.ward.name }}
                         </td>
 
                         <td class="px-6 py-4">
-                            {{ order.total && new Intl.NumberFormat('vi-VN', {
-                style: 'currency', currency: 'VND'
-            }).format(order.total) }}
+                            {{ order.total && new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND' }).format(order.total) }}
                         </td>
-
-
                         <td class="px-6 py-4 ">
                             <div class="flex items-center">
                                 <a v-if="queryParam != 'trash'" type="button" @click="handleModal(order)"
@@ -380,7 +375,7 @@ const submit = () => {
                                                 {{ new Intl.NumberFormat('vi-VN', {
                 style: 'currency', currency:
                     'VND'
-                                                }).format(product.pivot.quantity * product.pivot.price) }}
+            }).format(product.pivot.quantity * product.pivot.price) }}
                                             </td>
                                         </tr>
                                     </tbody>

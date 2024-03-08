@@ -13,7 +13,6 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
-    order: Object,
     coupons: Object,
     cities: Object,
     districts: Object,
@@ -21,12 +20,12 @@ const props = defineProps({
     products: Object,
 })
 
-const districtList = ref(props.districts)
-const wardList = ref(props.wards)
-const subtotal = ref(props.order.subtotal)
-const total = ref(props.order.total)
+const districtList = ref()
+const wardList = ref()
+const subtotal = ref(0)
+const total = ref(0)
 const couponCode = ref()
-const discount = ref()
+const discount = ref(0)
 const couponType = ref()
 const toastId = ref('');
 
@@ -52,19 +51,19 @@ const listStatus = [{
 }]
 
 const form = useForm({
-    id: props.order.id,
-    email: props.order.email,
-    method: props.order.method,
-    status: props.order.status,
-    phone: props.order.phone,
-    ship_address: props.order.ship_address,
-    city_id: props.order.city_id,
-    district_id: props.order.district_id,
-    ward_id: props.order.ward_id,
-    coupon_code: props.order.coupon_code,
-    coupon_type: props.order?.coupon_type,
-    discount: props.order.discount,
-    products: props.order.products,
+    id: '',
+    email: '',
+    method: '',
+    status: '',
+    phone: '',
+    ship_address: '',
+    city_id: '',
+    district_id: '',
+    ward_id: '',
+    coupon_code: '',
+    coupon_type: '',
+    discount: '',
+    products: '',
     deleteProductId: [],
     search: ''
 })
@@ -150,17 +149,10 @@ const handleIncrement = (id) => {
 }
 
 const handleAddProduct = (product) => {
-
-    console.log(props.order.subtotal)
     product['pivot'] = { price: product.price, quantity: 1 }
-    console.log(props.order)
     form.products = [...form.products, product]
     subtotal.value = subtotal.value + product.price
-    if (props.order.discount >= 0 && props.order.discount <= 100) {
-        total.value = subtotal.value - (subtotal.value * (form.discount / 100))
-    } else {
-        total.value = subtotal.value - form.discount
-    }
+    total.value = subtotal.value
 }
 
 const handleChangeCoupon = (type, code, amount, minimumSpend) => {
@@ -191,11 +183,11 @@ const submitCoupon = () => {
 }
 
 const submit = () => {
-    form.post(route('admin.order.update'), {
+    form.post(route('admin.order.store'), {
         onSuccess: () => {
             router.reload({ only: ['order'] })
             toast.remove(toastId.value)
-            toast.success('Cập nhật thành công!');
+            toast.success('Thêm thành công!');
         },
         onProgress: () => toastId.value = toast.loading('Loading...'),
     });
@@ -204,7 +196,6 @@ const submit = () => {
 
 <template>
     <div>
-
         <Head title="Cập nhật đơn đặt hàng" />
         <AuthenticatedLayout>
             <div>
@@ -224,7 +215,7 @@ const submit = () => {
                         <InputLabel for="email" value="Email" />
                         <TextInput type="text"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-400	 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            v-model="form.email" autocomplete="email" disabled />
+                            v-model="form.email" autocomplete="email" />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
 
@@ -260,8 +251,8 @@ const submit = () => {
                                     <option v-for="(city, index) in cities" :key="index" :value="city.id">
                                         {{ city.name }}
                                     </option>
-                                    <InputError class="mt-2" :message="form.errors.city_id" />
                                 </select>
+                                <InputError class="mt-2" :message="form.errors.city_id" />
                             </div>
 
                             <div class="relative z-0 w-full mb-5 group">
@@ -333,8 +324,8 @@ const submit = () => {
                                         </th>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                    style: 'currency', currency: 'VND'
-                }).format(product.pivot.quantity * product.pivot.price) }}
+                                                style: 'currency', currency: 'VND'
+                                            }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex gap-2">
@@ -355,9 +346,9 @@ const submit = () => {
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                    style: 'currency', currency:
-                        'VND'
-                }).format(product.pivot.quantity * product.pivot.price) }}
+                                                style: 'currency', currency:
+                                                    'VND'
+                                            }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -370,7 +361,9 @@ const submit = () => {
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </div>                   
+                            <InputError class="mt-2" :message="form.errors.products" />
+
                         <div class="text-right p-3 dark:text-white">
                             <div>
                                 Tạm tính: {{ new Intl.NumberFormat('vi-VN', {

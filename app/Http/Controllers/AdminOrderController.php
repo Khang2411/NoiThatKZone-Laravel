@@ -52,6 +52,68 @@ class AdminOrderController extends Controller
         return Inertia::render('Order/OrderList', ['orders' => $orders, 'list_action' => $list_action, 'count' => $count]);
     }
 
+    function add()
+    {
+        $cities = City::all();
+        $coupons = Coupon::all();
+        $products = Product::when(request()->search, function ($q) {
+            return $q->where('products.name', 'LIKE', '%' . request()->search . '%');
+        })->orderBy("id", "DESC")->paginate(10);
+        $products->appends(['order' => request()->order, 'search' => request()->search]);
+        //return $products;
+        if (request()->wantsJson()) {
+            return collect($products);
+        }
+        return Inertia::render('Order/OrderAdd', ['cities' => $cities, 'coupons' => $coupons, 'products' => $products]);
+    }
+    function store()
+    {
+        Validator::make(
+            request()->all(),
+            [
+                'phone' => 'required',
+                'email' => 'required',
+                'status' => 'required',
+                'ship_address' => 'required',
+                'city_id' => 'required',
+                'district_id' => 'required',
+                'ward_id' => 'required',
+                'products' => 'required'
+            ],
+            [
+                'email.required' => 'Email là bắt buộc',
+                'phone.required' => 'Số điện thoại là bắt buộc',
+                'status.required' => 'Trạng thái là bắt buộc',
+                'ship_address.required' => 'Số nhà là bắt buộc',
+                'city_id.required' => 'Tỉnh/thành là bặt buộc',
+                'district_id.required' => 'Quận/huyện là bắt buộc',
+                'ward_id.required' => 'Phường/xã là bắt buộc',
+                'products.required' => 'Sản phẩm là bắt buộc'
+            ]
+        )->validate();
+
+        $order = Order::create([
+            'email' => request()->email,
+            'phone' => request()->phone,
+            'status' => request()->status,
+            'ship_address' => request()->ship_address,
+            'city_id' => request()->city_id,
+            'district_id' => request()->district_id,
+            'ward_id' => request()->ward_id,
+            'coupon_code' => request()->coupon_code,
+            'discount' => request()->discount,
+            'method' => 'cod'
+        ]);
+
+        foreach (request()->products as $product) {
+            $order->products()->attach(
+                $product['id'],
+                ['quantity' => $product['pivot']['quantity'], 'price' => $product['pivot']['price']]
+            );
+        }
+        return redirect()->route('admin.order.list');
+    }
+
     function action()
     {
         $list_check = request()->list_check;
@@ -158,7 +220,7 @@ class AdminOrderController extends Controller
         $order->save();
         return redirect()->route('admin.order.list');
     }
-    
+
     function delete($id)
     {
         $order = Order::withTrashed()->find($id);
