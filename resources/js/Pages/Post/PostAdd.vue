@@ -53,7 +53,7 @@ function filePicker(callback, value, meta) {
 
 <template>
 
-    <Head title="Thêm bộ bài viết" />
+    <Head title="Thêm bài viết" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Thêm bài viết</p>

@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -40,7 +41,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/test', [TestController::class, 'test']);
+Route::get('/linkstorage', function () {
+    Artisan::call('storage:link');
+});
 
 Route::middleware('auth', 'checkRole')->group(function () {
     Route::group(['prefix' => 'laravel-filemanager'], function () {

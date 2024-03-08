@@ -90,7 +90,7 @@ const submit = () => {
                     <img v-if="previewBannerUrl" :src="previewBannerUrl" class="w-full mt-4 h-52" />
                 </div>
 
-                <div class="text-right pr-2">
+                <div class="text-right pr-2 mt-2">
                     <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Thêm thể loại
                     </PrimaryButton>
