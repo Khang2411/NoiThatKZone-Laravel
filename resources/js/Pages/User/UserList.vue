@@ -103,6 +103,7 @@ const submit = () => {
             currentModalObj.hide();
         },
         onProgress: () => toastId.value = toast.loading('Loading...'),
+        onError: () => { toast.remove(toastId.value) },
     });
 };
 </script>

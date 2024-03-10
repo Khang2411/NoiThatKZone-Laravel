@@ -98,7 +98,9 @@ const submit = () => {
             const targetEl = 'editUserModal';
             var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
             currentModalObj.hide();
-        }, onProgress: () => toastId.value = toast.loading('Loading...')
+        }, 
+        onProgress: () => toastId.value = toast.loading('Loading...'),
+        onError: () => { toast.remove(toastId.value) }
     });
 };
 

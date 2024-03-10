@@ -11,31 +11,34 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { formatNumeral } from 'cleave-zen'
 
-const previewUrl = ref('')
-const previewMultipleUrl = ref([])
+const props = defineProps({
+    collections: Object,
+    product: Object
+})
+
+const previewThumbnailUrl = ref('')
+const previewDetailImage = ref(props.product.detail_images)
+const detailImages = ref([])
+const removeDetailImage = ref([])
 const toastId = ref('');
 
-
-defineProps({
-    collections: Object
-})
 const form = useForm({
-    name: '',
-    collection_id: '',
-    price: '',
-    promotion_price: '',
-    describe: '',
-    thumbnail: '',
-    detail_images: [],
+    id: props.product.id,
+    name: props.product.name,
+    collection_id: props.product.collection_id,
+    price: new Intl.NumberFormat().format(props.product.price),
+    promotion_price: props.product.promotion_price ? props.product.promotion_price : null,
+    describe: props.product.describe,
+    thumbnail: props.product.thumbnail,
+    detail_images: props.product.detail_images,
     tags: [],
-    is_featured: false,
-    is_hot: false,
+    is_featured: props.product.is_featured,
+    is_hot: props.product.is_hot,
 });
 
 watch(
     () => form.price,
     () => {
-        console.log(`count is`)
         form.price = formatNumeral(form.price)
     }
 )
@@ -47,20 +50,30 @@ watch(
         form.promotion_price = formatNumeral(form.promotion_price)
     }
 )
+
 const handleThumbnail = (e) => {
     const file = e.target.files[0];
-    previewUrl.value = URL.createObjectURL(file);
+    previewThumbnailUrl.value = URL.createObjectURL(file);
 }
 
 const handleDetailImages = (e) => {
-    const selectedFiles = [];
     const targetFiles = e.target.files;
     const targetFilesObject = [...targetFiles]
     targetFilesObject.map((file) => {
-        return selectedFiles.push(URL.createObjectURL(file))
+        previewDetailImage.value = [...previewDetailImage.value, URL.createObjectURL(file)]
+        detailImages.value = [...detailImages.value, file]
     })
-    previewMultipleUrl.value = selectedFiles
 }
+
+const handleRemoveImage = (url, index) => {
+    if (url.id) {
+        removeDetailImage.value = [...removeDetailImage.value, url]
+    } else {
+        detailImages.value.splice(index - (previewDetailImage.value.length - detailImages.value.length), 1)
+    }
+    previewDetailImage.value.splice(index, 1);
+}
+
 
 function filePicker(callback, value, meta) {
     var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
@@ -79,14 +92,23 @@ function filePicker(callback, value, meta) {
 }
 
 const submit = () => {
-    form.post(route('admin.product.store'), {
+    console.log('start 123')
+    console.log(form)
+    form.defaults({
+        ...form,
+        detail_images: detailImages.value,
+        removeDetailImage: removeDetailImage.value
+    })
+    form.reset();
+    form.post(route('admin.product.update'), {
         onProgress: () => toastId.value = toast.loading('Loading...'),
         onSuccess: () => {
             toast.remove(toastId.value)
-            toast.success('Thêm thành công!')
+            toast.success('Cập nhật thành công!')
         }, onError: () => { toast.remove(toastId.value) },
     });
-};
+}
+
 </script>
 
 <template>
@@ -94,7 +116,7 @@ const submit = () => {
     <Head title="Thêm sản phẩm" />
     <AuthenticatedLayout>
         <div>
-            <p class="px-5 dark:text-white text-2xl">Thêm Sản Phẩm</p>
+            <p class="px-5 dark:text-white text-2xl">Cập nhật sản Phẩm</p>
         </div>
         <div class="md:flex mt-5 bg-white dark:bg-gray-700 p-5 rounded">
             <ul class="flex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0"
@@ -127,7 +149,7 @@ const submit = () => {
 
             <div id="default-tab-content" class="flex-1">
                 <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <form @submit.prevent="submit">
+                    <form @submit.prevent="submit()">
                         <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="profile" role="tabpanel"
                             aria-labelledby="profile-tab">
                             <div>
@@ -136,7 +158,8 @@ const submit = () => {
                                 </div>
                                 <div class="flex flex-wrap items-center">
                                     <InputLabel for="name" value="Tên sản phẩm" class="w-1/6" />
-                                    <TextInput type="text" class="mt-1 block w-6/12" v-model="form.name" />
+                                    <TextInput type="text" class="mt-1 block w-6/12" v-model="form.name"
+                                        autocomplete="name" />
                                 </div>
                                 <InputError class="mt-2" :message="form.errors.name" />
                                 <div>
@@ -146,7 +169,7 @@ const submit = () => {
                                             class="mt-1 block w-6/12 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                             v-model="form.collection_id">
                                             <option disabled value="">Chọn thể loại</option>
-                                            <option v-for="(collection, index) in collections" :key="index"
+                                            <option v-for="( collection, index ) in  collections " :key="index"
                                                 :value="collection.id">
                                                 {{ collection.name }}
                                             </option>
@@ -186,7 +209,9 @@ const submit = () => {
                                     <input type="file" id="thumbnail" @input="form.thumbnail = $event.target.files[0]"
                                         class="hidden" @change="handleThumbnail" />
                                     <InputError class="mt-2" :message="form.errors.thumbnail" />
-                                    <img v-if="previewUrl" :src="previewUrl" class="w-52 mt-4 h-52" />
+                                    <img v-if="!previewThumbnailUrl && form.thumbnail" :src="form.thumbnail"
+                                        class="w-52 mt-4 h-52" />
+                                    <img v-if="previewThumbnailUrl" :src="previewThumbnailUrl" class="w-52 mt-4 h-52" />
                                 </div>
                                 <div class="mt-5">
                                     <InputLabel for="detail_images" value="Chọn ảnh chi tiết sản phẩm"
@@ -196,8 +221,18 @@ const submit = () => {
                                         @change="handleDetailImages" />
                                     <InputError class="mt-2" :message="form.errors.detail_images" />
                                     <div class="flex flex-wrap gap-2">
-                                        <img v-for="(url, index) in previewMultipleUrl" :key="index" :src="url"
-                                            class="w-52 mt-4 h-52" />
+                                        <div v-for="( url, index ) in  previewDetailImage " :key="index">
+                                            <div v-if="url" class="w-44 mt-4 h-44 relative">
+                                                <img :src="url.image ? url.image : url" class="w-44 mt-4 h-44" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor"
+                                                    class="w-6 h-6 absolute top-0 right-0"
+                                                    @click="handleRemoveImage(url, index)">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -208,31 +243,34 @@ const submit = () => {
                             <div>
                                 <Editor v-model="form.describe"
                                     api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0" :init="{
-                            height: '500',
-                            path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
-                                ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
-                                    , 'searchreplace wordcount visualblocks visualchars code fullscreen'
-                                    , 'insertdatetime media nonbreaking save table directionality'
-                                    , 'emoticons template paste textpattern'],
-                            toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media'
-                            , file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
-                        }" />
+                        height: '500',
+                        path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
+                            ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
+                                , 'searchreplace wordcount visualblocks visualchars code fullscreen'
+                                , 'insertdatetime media nonbreaking save table directionality'
+                                , 'emoticons template paste textpattern'],
+                        toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media',
+                        file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
+                    }" />
                                 <InputError class="mt-2" :message="form.errors.describe" />
+
                             </div>
                         </div>
-                        <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-white" id="contacts"
-                            role="tabpanel" aria-labelledby="contacts-tab">
+                        <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="contacts" role="tabpanel"
+                            aria-labelledby="contacts-tab">
                             <div>
-                                <input type="checkbox" v-model="form.is_hot" class="mr-2"> Sản phẩm bán chạy
+                                <input type="checkbox" v-model="form.is_hot" :checked="form.is_hot === 1" class="mr-2">
+                                Sản phẩm bán chạy
                             </div>
                             <div class="mt-5">
-                                <input type="checkbox" v-model="form.is_featured" class="mr-2"> Sản phẩm nổi bật
+                                <input type="checkbox" v-model="form.is_featured" :checked="form.is_featured === 1"
+                                    class="mr-2"> Sản phẩm nổi bật
                             </div>
                         </div>
                         <div class="text-right pr-11">
                             <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
                                 :disabled="form.processing">
-                                Thêm sản phẩm
+                                Lưu
                             </PrimaryButton>
                         </div>
                     </form>

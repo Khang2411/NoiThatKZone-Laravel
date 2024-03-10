@@ -98,7 +98,7 @@ const handleRemove = (id) => {
     }
 }
 const submit = () => {
-    router.visit(`/admin/order/edit?order=${form.id}`, { preserveScroll: true })
+    router.visit(`/admin/order/edit/${form.id}`, { preserveScroll: true })
 };
 
 </script>

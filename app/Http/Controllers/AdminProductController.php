@@ -50,6 +50,14 @@ class AdminProductController extends Controller
         return Inertia::render('Product/ProductAdd', ['collections' => $collections]);
     }
 
+    function edit($id)
+    {
+        $collections = Collection::where('collection_id', '!=', null)->get();
+        $product = Product::find($id);
+        $product->detailImages;
+        return Inertia::render('Product/ProductEdit', ['collections' => $collections, 'product' => $product]);
+    }
+
     function store()
     {
         $input = request()->all();
@@ -114,17 +122,19 @@ class AdminProductController extends Controller
 
     function update()
     {
+       // return request();
         $input = request()->all();
         $input['price'] = Str::replace(['.', ','], '', $input['price']);
-        $input['promotion_price'] = Str::replace(['.', ','], '', $input['promotion_price']);
+
         if ($input['promotion_price']) {
+            $input['promotion_price'] = Str::replace(['.', ','], '', $input['promotion_price']);
             $input['price_before_discount'] = $input['price'];
             $input['price'] = $input['promotion_price'];
         }
         if (request()->thumbnail == "undefined") {
             $input = request()->except("thumbnail");
         }
-        
+
         Validator::make(
             $input,
             [
@@ -180,11 +190,13 @@ class AdminProductController extends Controller
             $input['thumbnail'] = $thumbnail['secure_url'];
             $input['public_id_thumbnail'] = $thumbnail['public_id'];
         }
+
         $id = request()->id;
+
         $product = Product::find($id);
         $product->fill($input)->save();
-        $product->collection;
-        // return response()->json($product);
+        
+        return to_route('admin.product.list');
     }
 
     function delete($id)

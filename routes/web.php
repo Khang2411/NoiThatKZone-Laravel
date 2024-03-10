@@ -41,10 +41,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/linkstorage', function () {
-    Artisan::call('storage:link');
-});
-
 Route::middleware('auth', 'checkRole')->group(function () {
     Route::group(['prefix' => 'laravel-filemanager'], function () {
         \UniSharp\LaravelFilemanager\Lfm::routes();
@@ -65,6 +61,8 @@ Route::middleware('auth', 'checkRole')->group(function () {
         Route::get('admin/posts/edit/{id}', [AdminPostController::class, 'edit'])->name('admin.post.edit');
         Route::post('admin/posts/update', [AdminPostController::class, 'update'])->name('admin.post.update');
         Route::post('admin/posts/delete/{id}', [AdminPostController::class, 'delete'])->name('admin.post.delete');
+        Route::get('admin/product/edit/{id}', [AdminProductController::class, 'edit'])->name('admin.product.edit');
+
     });
 
     Route::middleware('can:module.banners')->group(function () {
@@ -116,7 +114,7 @@ Route::middleware('auth', 'checkRole')->group(function () {
     Route::middleware('can:module.orders')->group(function () {
         Route::get('admin/order/list', [AdminOrderController::class, 'list'])->name('admin.order.list');
         Route::post('admin/order/action', [AdminOrderController::class, 'action'])->name('admin.order.action');
-        Route::get('admin/order/edit', [AdminOrderController::class, 'edit'])->name('admin.order.edit');
+        Route::get('admin/order/edit/{id}', [AdminOrderController::class, 'edit'])->name('admin.order.edit');
         Route::get('admin/order/add', [AdminOrderController::class, 'add'])->name('admin.order.add.view');
         Route::post('admin/order/store', [AdminOrderController::class, 'store'])->name('admin.order.store');
         Route::post('admin/order/update', [AdminOrderController::class, 'update'])->name('admin.order.update');

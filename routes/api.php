@@ -255,7 +255,7 @@ Route::prefix('v1')->group(function () {
             'rating' => request()->rating,
             'status' => 'pending'
         ]);
-    })->name('api-reviews.add');
+    })->name('api-reviews.reply');
 
     Route::get('/search/{search}', function ($search) {
         $products = Product::where('name', 'LIKE', '%' . $search . '%')->get();
@@ -363,7 +363,7 @@ Route::prefix('v1')->group(function () {
             $total = $total + $cartItem['quantity'] * $cartItem['price'];
         }
         return response()->json(['data' =>  $products, "total" => $total], 200);
-    })->name('api-cart-list');
+    })->name('api-cart-user');
 
     Route::post('/user/cart/quantity', function () {
         $user = auth('sanctum')->user();
@@ -375,14 +375,14 @@ Route::prefix('v1')->group(function () {
             ]
         );
         return request();
-    })->name('api-cart-list');
+    })->name('api-cart-quantity');
 
     Route::post('/user/cart/remove', function () {
         $user = auth('sanctum')->user();
         $cart = Cart::where('user_id', $user->id)->first();
         $cart->products()->detach([request()->product_id]);
         return $cart;
-    })->name('api-cart-list');
+    })->name('api-cart-remove');
 
     Route::post('/cart/add', function () {
         $user = auth('sanctum')->user();
@@ -404,7 +404,7 @@ Route::prefix('v1')->group(function () {
                 ]
             );
         }
-    })->name('api-cart-stock');
+    })->name('api-cart-add');
 
 
     Route::post('/cart/coupon', function () {
@@ -528,7 +528,7 @@ Route::prefix('v1')->group(function () {
         $sliders = Slider::all();
         $banners = Banner::all();
         return response()->json(['data' => ['sliders' => $sliders, 'banners' => $banners]], 200);
-    })->name('api-post-details');
+    })->name('api.home.banners');
 
     Route::post('/social/login', function () {
         $user = User::where('provider_id', request()->provider_id)->orWhere('email', request()->email)->first();

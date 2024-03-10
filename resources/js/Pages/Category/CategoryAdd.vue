@@ -38,7 +38,8 @@ const submit = () => {
         onSuccess: () => {
             toast.remove(toastId.value)
             toast.success('Thêm thành công!')
-        }
+        },
+        onError: () => { toast.remove(toastId.value) },
     });
 }
 </script>

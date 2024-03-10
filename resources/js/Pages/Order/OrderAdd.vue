@@ -13,6 +13,7 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
+    order: Object,
     coupons: Object,
     cities: Object,
     districts: Object,
@@ -20,16 +21,16 @@ const props = defineProps({
     products: Object,
 })
 
-const districtList = ref()
-const wardList = ref()
-const subtotal = ref(0)
-const total = ref(0)
+const districtList = ref(props.districts)
+const wardList = ref(props.wards)
 const couponCode = ref()
-const discount = ref(0)
+const discount = ref()
 const couponType = ref()
 const toastId = ref('');
-
-const productsObserver = ref([...props.products.data]);
+const productsObserver = ref([]);
+const productsOrder = ref([])
+const subTotal = ref(0)
+const total = ref(0)
 
 const listStatus = [{
     id: 'completed',
@@ -51,21 +52,19 @@ const listStatus = [{
 }]
 
 const form = useForm({
-    id: '',
-    email: '',
-    method: '',
-    status: '',
-    phone: '',
-    ship_address: '',
-    city_id: '',
-    district_id: '',
-    ward_id: '',
-    coupon_code: '',
-    coupon_type: '',
-    discount: '',
-    products: '',
-    deleteProductId: [],
-    search: ''
+    email: "",
+    method: "",
+    status: "",
+    phone: "",
+    ship_address: "",
+    city_id: "",
+    district_id: "",
+    ward_id: "",
+    coupon_code: "",
+    coupon_type: "",
+    discount: "",
+    products: "",
+    search: '',
 })
 
 const getItems = async () => {
@@ -80,7 +79,8 @@ const handleSearch = debounce(async (e) => {
             search: e.target.value
         }
     })
-    props.products.data = getProducts.data.data
+
+    productsObserver.value = getProducts.data.data
     props.products.next_page_url = getProducts.data.next_page_url
 }, 500)
 
@@ -102,8 +102,8 @@ const onHanldeChange = async (e) => {
 }
 const handleDeleteProduct = (id) => {
     let product = form.products.filter((item) => item.id !== id)
-    form.deleteProductId.push(id)
-    form.products = product
+    productsOrder.value = product
+    form.products = productsOrder.value
     form.coupon_code = ''
     form.discount = ''
 
@@ -112,51 +112,48 @@ const handleDeleteProduct = (id) => {
         temp = temp + item.pivot.quantity * item.pivot.price
 
     })
-    subtotal.value = temp;
+    subTotal.value = temp;
     total.value = temp;
 }
 
 const handleDecrement = (id) => {
-    form.products.map((item) => {
-        if (item.id === id) {
-            if (item.pivot.quantity > 1) {
-                item.pivot.quantity -= 1
-                subtotal.value = subtotal.value - item.pivot.price
-                total.value = subtotal.value
-                form.coupon_code = ''
-                form.discount = ''
-            } else {
-                item.pivot.quantity -= 0
-            }
-        }
-    })
+    const index = productsOrder.value.findIndex(i => i.id === id);
+
+    if (productsOrder.value[index].pivot.quantity > 1) {
+        productsOrder.value[index].pivot.quantity = parseInt(productsOrder.value[index].pivot.quantity) - 1;
+        subTotal.value = parseInt(subTotal.value) - parseInt(productsOrder.value[index].pivot.price)
+        total.value = parseInt(subTotal.value)
+        form.coupon_code = ''
+        form.discount = ''
+    }
+    console.log(productsOrder.value[index])
+    form.products = productsOrder.value;
 }
 
 const handleIncrement = (id) => {
-    form.products.map((item) => {
-        if (item.id === id) {
-            if (item.pivot.quantity < item.stock) {
-                item.pivot.quantity += 1;
-                subtotal.value = subtotal.value + item.pivot.price
-                total.value = subtotal.value
-                form.coupon_code = ''
-                form.discount = ''
-            } else {
-                item.pivot.quantity += 0;
-            }
-        }
-    })
+    const index = productsOrder.value.findIndex(i => i.id === id);
+
+    if (productsOrder.value[index].pivot.quantity) {
+        productsOrder.value[index].pivot.quantity = parseInt(productsOrder.value[index].pivot.quantity) + 1;
+        subTotal.value = parseInt(subTotal.value) + parseInt(productsOrder.value[index].pivot.price)
+        total.value = parseInt(subTotal.value)
+        form.coupon_code = ''
+        form.discount = ''
+    }
+    console.log(productsOrder.value[index])
+    form.products = productsOrder.value;
 }
 
 const handleAddProduct = (product) => {
     product['pivot'] = { price: product.price, quantity: 1 }
-    form.products = [...form.products, product]
-    subtotal.value = subtotal.value + product.price
-    total.value = subtotal.value
+
+    productsOrder.value = [...productsOrder.value, product]
+    subTotal.value = parseInt(subTotal.value) + parseInt(product.price)
+    total.value = parseInt(subTotal.value)
 }
 
 const handleChangeCoupon = (type, code, amount, minimumSpend) => {
-    if (subtotal.value >= minimumSpend) {
+    if (subTotal.value >= minimumSpend) {
         couponCode.value = code
         discount.value = amount
         couponType.value = type
@@ -176,9 +173,9 @@ const submitCoupon = () => {
     form.coupon_type = couponType.value
 
     if (form.coupon_type === 'percent') {
-        total.value = subtotal.value - (subtotal.value * (form.discount / 100))
+        total.value = subTotal.value - (subTotal.value * (form.discount / 100))
     } else {
-        total.value = subtotal.value - form.discount
+        total.value = subTotal.value - form.discount
     }
 }
 
@@ -190,12 +187,14 @@ const submit = () => {
             toast.success('Thêm thành công!');
         },
         onProgress: () => toastId.value = toast.loading('Loading...'),
+        onError: () => { toast.remove(toastId.value) },
     });
 };
 </script>
 
 <template>
     <div>
+
         <Head title="Cập nhật đơn đặt hàng" />
         <AuthenticatedLayout>
             <div>
@@ -310,7 +309,7 @@ const submit = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(product, index) in form.products" :key="index"
+                                    <tr v-for="(product, index) in productsOrder" :key="index"
                                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                         <th scope="row"
                                             class="w-40 px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -324,8 +323,8 @@ const submit = () => {
                                         </th>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency', currency: 'VND'
-                                            }).format(product.pivot.quantity * product.pivot.price) }}
+                    style: 'currency', currency: 'VND'
+                }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex gap-2">
@@ -346,9 +345,9 @@ const submit = () => {
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency', currency:
-                                                    'VND'
-                                            }).format(product.pivot.quantity * product.pivot.price) }}
+                    style: 'currency', currency:
+                        'VND'
+                }).format(product.pivot.quantity * product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -361,15 +360,15 @@ const submit = () => {
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>                   
-                            <InputError class="mt-2" :message="form.errors.products" />
+                        </div>
+                        <InputError class="mt-2" :message="form.errors.products" />
 
                         <div class="text-right p-3 dark:text-white">
                             <div>
                                 Tạm tính: {{ new Intl.NumberFormat('vi-VN', {
                     style: 'currency', currency:
                         'VND'
-                }).format(subtotal) }}
+                }).format(subTotal) }}
                             </div>
                             <div>
                                 Mã Coupon: {{ form.coupon_code ? form.coupon_code : 'Không có' }}

@@ -140,11 +140,10 @@ class AdminOrderController extends Controller
         }
     }
 
-    function edit()
+    function edit($id)
     {
         $total = 0;
-
-        $order = Order::find(request()->order);
+        $order = Order::find($id);
         $order['products'] = $order->products;
         $order['city'] = $order->city;
         $order['district'] = $order->district;
