@@ -122,7 +122,6 @@ class AdminProductController extends Controller
 
     function update()
     {
-       // return request();
         $input = request()->all();
         $input['price'] = Str::replace(['.', ','], '', $input['price']);
 
@@ -195,8 +194,9 @@ class AdminProductController extends Controller
 
         $product = Product::find($id);
         $product->fill($input)->save();
-        
-        return to_route('admin.product.list');
+
+        $page = request()->back_to;
+        return redirect('/admin/product/list?page=' . $page);
     }
 
     function delete($id)

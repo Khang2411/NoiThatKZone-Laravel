@@ -20,7 +20,7 @@ const props = defineProps({
     wards: Object,
     products: Object,
 })
-
+const back_to = ref(new URLSearchParams(window.location.search).get('back_to'))
 const districtList = ref(props.districts)
 const wardList = ref(props.wards)
 const couponCode = ref()
@@ -53,6 +53,7 @@ const listStatus = [{
 
 const form = useForm({
     id: props.order.id,
+    ship_name: props.order.ship_name,
     email: props.order.email,
     method: props.order.method,
     status: props.order.status,
@@ -67,6 +68,7 @@ const form = useForm({
     products: productsOrder.value,
     deleteProductId: [],
     search: '',
+    back_to: decodeURIComponent(back_to.value)
 })
 
 const getItems = async () => {
@@ -153,12 +155,15 @@ const handleAddProduct = (product) => {
 
     productsOrder.value = [...productsOrder.value, product]
     subTotal.value = parseInt(subTotal.value) + parseInt(product.price)
-
-    if (props.order.discount >= 0 && props.order.discount <= 100) {
-        total.value = parseInt(subTotal.value) - (parseInt(subTotal.value) * (parseInt(form.discount) / 100))
-    } else {
-        total.value = parseInt(subTotal.value) - parseInt(form.discount)
+    if (props.order.discount) {
+        if (props.order.discount >= 0 && props.order.discount <= 100) {
+            total.value = parseInt(subTotal.value) - (parseInt(subTotal.value) * (parseInt(form.discount) / 100))
+        } else {
+            total.value = parseInt(subTotal.value) - parseInt(form.discount)
+        }
     }
+
+    form.products = productsOrder.value;
 }
 
 const handleChangeCoupon = (type, code, amount, minimumSpend) => {
@@ -211,6 +216,14 @@ const submit = () => {
             </div>
             <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 w-10/12 m-auto mt-5 text-white">
                 <form @submit.prevent="submit" class="max-w-4xl mx-auto">
+                    <div class="mb-5">
+                        <InputLabel for="ship_name" value="Tên người đặt" />
+                        <TextInput type="text"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            v-model="form.ship_name" />
+                        <InputError class="mt-2" :message="form.errors.ship_name" />
+                    </div>
+
                     <div class="mb-5">
                         <InputLabel for="phone" value="Số điện thoại" />
                         <TextInput type="text"
@@ -318,6 +331,7 @@ const submit = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <InputError class="mt-2" :message="form.errors.products" />
                                     <tr v-for="(product, index) in productsOrder" :key="index"
                                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                         <th scope="row"
@@ -333,7 +347,7 @@ const submit = () => {
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
                     style: 'currency', currency: 'VND'
-                }).format(product.pivot.quantity * product.pivot.price) }}
+                }).format(product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex gap-2">

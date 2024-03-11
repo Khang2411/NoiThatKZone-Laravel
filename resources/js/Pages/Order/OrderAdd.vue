@@ -52,6 +52,7 @@ const listStatus = [{
 }]
 
 const form = useForm({
+    ship_name: "",
     email: "",
     method: "",
     status: "",
@@ -150,6 +151,7 @@ const handleAddProduct = (product) => {
     productsOrder.value = [...productsOrder.value, product]
     subTotal.value = parseInt(subTotal.value) + parseInt(product.price)
     total.value = parseInt(subTotal.value)
+    form.products = productsOrder.value;
 }
 
 const handleChangeCoupon = (type, code, amount, minimumSpend) => {
@@ -202,6 +204,14 @@ const submit = () => {
             </div>
             <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 w-10/12 m-auto mt-5 text-white">
                 <form @submit.prevent="submit" class="max-w-4xl mx-auto">
+                    <div class="mb-5">
+                        <InputLabel for="ship_name" value="Tên người đặt" />
+                        <TextInput type="text"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            v-model="form.ship_name" />
+                        <InputError class="mt-2" :message="form.errors.ship_name" />
+                    </div>
+
                     <div class="mb-5">
                         <InputLabel for="phone" value="Số điện thoại" />
                         <TextInput type="text"
@@ -324,7 +334,7 @@ const submit = () => {
                                         <td class="px-6 py-4 text-center">
                                             {{ new Intl.NumberFormat('vi-VN', {
                     style: 'currency', currency: 'VND'
-                }).format(product.pivot.quantity * product.pivot.price) }}
+                }).format(product.pivot.price) }}
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex gap-2">

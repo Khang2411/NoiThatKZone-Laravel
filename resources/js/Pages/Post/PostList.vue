@@ -15,6 +15,7 @@ const props = defineProps({
     count: Array,
 })
 
+const page = ref(new URLSearchParams(window.location.search).get('page'))
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
 const toastId = ref('');
 
@@ -195,7 +196,7 @@ const handleSearch = debounce((e) => {
                             </td>
                             <td class="px-6 py-4 ">
                                 <div class="flex items-center">
-                                    <Link :href="`edit/${post.id}`" v-if="queryParam != 'trash'" type="button"
+                                    <Link :href="route('admin.post.edit', post.id + `?back_to=${encodeURIComponent(page)}`)" v-if="queryParam != 'trash'" type="button"
                                         data-modal-target="editUserModal" data-modal-show="editUserModal"
                                         class="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

@@ -13,13 +13,14 @@ const props = defineProps({
     role: Object,
     permissions: Object
 })
-
+const back_to = ref(new URLSearchParams(window.location.search).get('back_to'))
 const toastId = ref('');
 
 const form = useForm({
     name: props.role.name,
     description: props.role.description,
-    list_permission: Array.from(props.role.permissions).map(x => x.id)
+    list_permission: Array.from(props.role.permissions).map(x => x.id),
+    back_to: decodeURIComponent(back_to.value)
 });
 
 const submit = () => {

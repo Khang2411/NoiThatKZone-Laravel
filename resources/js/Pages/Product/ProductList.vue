@@ -20,11 +20,8 @@ const props = defineProps({
     status: String,
     count: Array
 })
+const page = ref(new URLSearchParams(window.location.search).get('page'))
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
-const previewThumbnailUrl = ref('')
-const previewDetailImage = ref([])
-const detailImages = ref([])
-const removeDetailImage = ref([])
 const toastId = ref('');
 
 const form = useForm({
@@ -90,26 +87,6 @@ const handleSearch = debounce((e) => {
 }, 500)
 
 
-const submit = (id) => {
-    form.defaults({
-        ...form,
-        detail_images: detailImages.value,
-        removeDetailImage: removeDetailImage.value
-    })
-    form.reset();
-    form.post(route('admin.product.update'), {
-        onSuccess: () => {
-            router.reload({ only: ['products'] })
-            toast.remove(toastId.value)
-            toast.success('Cập nhật thành công!');
-            const targetEl = 'editUserModal';
-            var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
-            currentModalObj.hide();
-        },
-        onProgress: () => toastId.value = toast.loading('Loading...'),
-        onError: () => { toast.remove(toastId.value) },
-    });
-};
 </script>
 
 <template>
@@ -152,8 +129,8 @@ const submit = (id) => {
                             aria-labelledby="dropdownActionButton">
                             <li v-for="( [key, value], index ) in Object.entries(list_action) " :key="index">
                                 <a href="#" @click="handleAction(key)"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{
-                value }}</a>
+                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                    {{ value }}</a>
                             </li>
                         </ul>
                     </div>
@@ -167,7 +144,7 @@ const submit = (id) => {
                                 d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </div>
-                    <input type="text" id="table-search-users" @keyup="handleSearch($event)"
+                    <input type="text" id="table-search-users" v-model="form.search" @keyup="handleSearch($event)"
                         class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Tim kiếm">
                 </div>
@@ -243,7 +220,8 @@ const submit = (id) => {
                         </td>
                         <td class="px-6 py-4 ">
                             <div class="flex items-center">
-                                <a v-if="queryParam != 'trash'" type="button" :href="route('admin.product.edit',product.id)"
+                                <a v-if="queryParam != 'trash'" type="button"
+                                    :href="route('admin.product.edit', product.id + `?back_to=${encodeURIComponent(page)}`)"
                                     class="font-medium text-blue-600 dark:text-blue-500 hover:underlin cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">

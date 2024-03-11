@@ -13,6 +13,7 @@ import 'vue3-toastify/dist/index.css';
 const props = defineProps({
     post: Object
 })
+const back_to = ref(new URLSearchParams(window.location.search).get('back_to'))
 const previewThumbnailUrl = ref('')
 const toastId = ref('');
 
@@ -21,6 +22,7 @@ const form = useForm({
     title: props.post.title,
     thumbnail: props.post.thumbnail,
     content: props.post.content,
+    back_to: decodeURIComponent(back_to.value),
 });
 
 const handleChangeThumbnail = (e) => {

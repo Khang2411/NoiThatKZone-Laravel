@@ -4,7 +4,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import Editor from '@tinymce/tinymce-vue';
 import { ref, watch } from 'vue';
 import { toast } from 'vue3-toastify';
@@ -16,6 +16,7 @@ const props = defineProps({
     product: Object
 })
 
+const back_to = ref(new URLSearchParams(window.location.search).get('back_to'))
 const previewThumbnailUrl = ref('')
 const previewDetailImage = ref(props.product.detail_images)
 const detailImages = ref([])
@@ -34,6 +35,7 @@ const form = useForm({
     tags: [],
     is_featured: props.product.is_featured,
     is_hot: props.product.is_hot,
+    back_to: decodeURIComponent(back_to.value),
 });
 
 watch(
@@ -113,7 +115,7 @@ const submit = () => {
 
 <template>
 
-    <Head title="Thêm sản phẩm" />
+    <Head title="Cập nhật sản phẩm" />
     <AuthenticatedLayout>
         <div>
             <p class="px-5 dark:text-white text-2xl">Cập nhật sản Phẩm</p>

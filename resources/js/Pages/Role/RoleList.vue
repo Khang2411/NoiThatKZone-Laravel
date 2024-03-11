@@ -15,6 +15,7 @@ const props = defineProps({
 })
 
 const toastId = ref('');
+const page = ref(new URLSearchParams(window.location.search).get('page'))
 
 const form = useForm({
     search: new URLSearchParams(window.location.search).get('search'),
@@ -188,7 +189,7 @@ const handleRemove = (id) => {
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center" v-if="role.name != 'Admin' && role.name != 'Customer'">
-                                <Link :href="route('admin.role.edit', role.id)"
+                                <Link :href="route('admin.role.edit', role.id + `?back_to=${encodeURIComponent(page)}`)"
                                     class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">

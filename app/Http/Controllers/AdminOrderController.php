@@ -71,10 +71,11 @@ class AdminOrderController extends Controller
         Validator::make(
             request()->all(),
             [
-                'phone' => 'required',
-                'email' => 'required',
+                'phone' => 'required|min:10',
+                'email' => 'required|email',
                 'status' => 'required',
                 'ship_address' => 'required',
+                'ship_name' => 'required',
                 'city_id' => 'required',
                 'district_id' => 'required',
                 'ward_id' => 'required',
@@ -82,9 +83,12 @@ class AdminOrderController extends Controller
             ],
             [
                 'email.required' => 'Email là bắt buộc',
+                'email.email' => 'Email không hợp lệ',
                 'phone.required' => 'Số điện thoại là bắt buộc',
+                'phone.min' => 'Số điện thoại là 10 số',
                 'status.required' => 'Trạng thái là bắt buộc',
                 'ship_address.required' => 'Số nhà là bắt buộc',
+                'ship_name.required' => 'Tên người đặt là bắt buộc',
                 'city_id.required' => 'Tỉnh/thành là bặt buộc',
                 'district_id.required' => 'Quận/huyện là bắt buộc',
                 'ward_id.required' => 'Phường/xã là bắt buộc',
@@ -97,6 +101,7 @@ class AdminOrderController extends Controller
             'phone' => request()->phone,
             'status' => request()->status,
             'ship_address' => request()->ship_address,
+            'ship_name' => request()->ship_name,
             'city_id' => request()->city_id,
             'district_id' => request()->district_id,
             'ward_id' => request()->ward_id,
@@ -180,22 +185,28 @@ class AdminOrderController extends Controller
         Validator::make(
             request()->all(),
             [
-                'phone' => 'required',
+                'phone' => 'required|min:10',
                 //'email' => 'required',
                 'status' => 'required',
                 'ship_address' => 'required',
                 'city_id' => 'required',
                 'district_id' => 'required',
                 'ward_id' => 'required',
+                'products' => 'required',
+                'ship_name' => 'required'
+
 
             ],
             [
                 'phone.required' => 'Số điện thoại là bắt buộc',
+                'phone.min' => 'Số điện thoại là 10 số',
+                'ship_name.required' => 'Tên người đặt là bắt buộc',
                 'status.required' => 'Trạng thái là bắt buộc',
                 'ship_address.required' => 'Số nhà là bắt buộc',
                 'city_id.required' => 'Tỉnh/thành là bặt buộc',
                 'district_id.required' => 'Quận/huyện là bắt buộc',
-                'ward_id.required' => 'Phường/xã là bắt buộc'
+                'ward_id.required' => 'Phường/xã là bắt buộc',
+                'products.required' => 'Sản phẩm là bắt buộc'
             ]
         )->validate();
 
@@ -216,8 +227,11 @@ class AdminOrderController extends Controller
         $order->ward_id = request()->ward_id;
         $order->coupon_code = request()->coupon_code;
         $order->discount = request()->discount;
+        $order->ship_name = request()->ship_name;
         $order->save();
-        return redirect()->route('admin.order.list');
+
+        $page = request()->back_to;
+        return redirect('/admin/order/list?page=' . $page);
     }
 
     function delete($id)

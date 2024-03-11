@@ -65,7 +65,7 @@ class AdminRoleController extends Controller
         Validator::make(
             request()->all(),
             [
-                'name' => 'required|unique:roles,name,'.$id,
+                'name' => 'required|unique:roles,name,' . $id,
                 'description' => 'required',
             ],
             [
@@ -80,7 +80,9 @@ class AdminRoleController extends Controller
 
         $role->permissions()->sync(request()->list_permission);
         $role->save();
-        return to_route('admin.role.list');
+
+        $page = request()->back_to;
+        return redirect('/admin/role/list?page=' . $page);
     }
 
     function delete($id)

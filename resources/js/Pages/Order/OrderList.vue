@@ -20,6 +20,7 @@ const props = defineProps({
     count: Array,
 })
 
+const page = ref(new URLSearchParams(window.location.search).get('page'))
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
 const toastId = ref('');
 
@@ -98,7 +99,7 @@ const handleRemove = (id) => {
     }
 }
 const submit = () => {
-    router.visit(`/admin/order/edit/${form.id}`, { preserveScroll: true })
+    router.visit(`/admin/order/edit/${form.id}?back_to=${encodeURIComponent(page.value)}`, { preserveScroll: true })
 };
 
 </script>
@@ -253,11 +254,14 @@ const submit = () => {
                         </td>
 
                         <td class="px-2 py-4 w-52">
-                            {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", " +order.ward.name }}
+                            {{ order.ship_address + ", " + order.city.name + ", " + order.district.name + ", "
+                + order.ward.name }}
                         </td>
 
                         <td class="px-6 py-4">
-                            {{ order.total && new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND' }).format(order.total) }}
+                            {{ order.total && new Intl.NumberFormat('vi-VN', {
+                style: 'currency', currency: 'VND'
+            }).format(order.total) }}
                         </td>
                         <td class="px-6 py-4 ">
                             <div class="flex items-center">
@@ -374,8 +378,8 @@ const submit = () => {
                                             <td class="px-6 py-4 text-center">
                                                 {{ new Intl.NumberFormat('vi-VN', {
                 style: 'currency', currency:
-                    'VND'
-            }).format(product.pivot.quantity * product.pivot.price) }}
+                                                'VND'
+                                                }).format(product.pivot.quantity * product.pivot.price) }}
                                             </td>
                                         </tr>
                                     </tbody>

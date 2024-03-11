@@ -120,7 +120,8 @@ class AdminPostController extends Controller
         }
         $post->content = request()->content;
         $post->save();
-        return redirect()->route('admin.post.list');
+        $page = request()->back_to;
+        return redirect('/admin/posts/list?page=' . $page);
     }
 
     function delete($id)
