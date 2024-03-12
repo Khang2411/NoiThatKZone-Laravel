@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminRoleController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestController;
+use App\Models\Collection;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -62,7 +63,6 @@ Route::middleware('auth', 'checkRole')->group(function () {
         Route::post('admin/posts/update', [AdminPostController::class, 'update'])->name('admin.post.update');
         Route::post('admin/posts/delete/{id}', [AdminPostController::class, 'delete'])->name('admin.post.delete');
         Route::get('admin/product/edit/{id}', [AdminProductController::class, 'edit'])->name('admin.product.edit');
-
     });
 
     Route::middleware('can:module.banners')->group(function () {

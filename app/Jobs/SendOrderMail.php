@@ -35,6 +35,7 @@ class SendOrderMail implements ShouldQueue
     public function handle(): void
     {
         $email = $this->localOrderMail ? null : User::find($this->userId)->email;
+        
         Mail::to($email ? $email : $this->localOrderMail)->send(new OrderConfirmed($this->order));
     }
 }

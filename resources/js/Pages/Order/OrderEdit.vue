@@ -155,14 +155,15 @@ const handleAddProduct = (product) => {
 
     productsOrder.value = [...productsOrder.value, product]
     subTotal.value = parseInt(subTotal.value) + parseInt(product.price)
-    if (props.order.discount) {
-        if (props.order.discount >= 0 && props.order.discount <= 100) {
+    total.value = parseInt(subTotal.value)
+    
+    if (form.coupon_type) {
+        if (form.coupon_type === 'percent') {
             total.value = parseInt(subTotal.value) - (parseInt(subTotal.value) * (parseInt(form.discount) / 100))
         } else {
             total.value = parseInt(subTotal.value) - parseInt(form.discount)
         }
     }
-
     form.products = productsOrder.value;
 }
 

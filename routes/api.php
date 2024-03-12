@@ -27,16 +27,7 @@ use App\Models\Slider;
 use App\Jobs\SendOrderMail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', function (Request $request) {
@@ -432,6 +423,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/checkout/momo/return/{order}', [AdminCheckOutController::class, 'momoCheckoutReturn'])->name('api.checkout.momo.return');
 
     Route::post('/checkout', function () {
+      //  return 1;
         $order = Order::create([
             'user_id' => request()->order['user_id'],
             'email' => request()->order['email'],
