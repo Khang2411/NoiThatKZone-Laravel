@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'failed' => 'Tài khoản không tồn tại.',
+    'failed' => 'Tài khoản hoặc mật khẩu không chính xác.',
     'password' => 'Mật khẩu không chính xác.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 

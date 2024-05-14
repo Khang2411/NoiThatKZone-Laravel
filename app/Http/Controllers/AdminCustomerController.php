@@ -47,13 +47,13 @@ class AdminCustomerController extends Controller
     {
         Validator::make(request()->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['min:10', 'max:10'],
+            'phone' => ['required','regex:/^(\+84|84|0)[0-9]{9}$/'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'role_id' => 'required'
         ], [
             'name.required' => 'Tên không được trống',
-            'phone.min' => 'SĐT phải là 10 số',
-            'phone.max' => 'SĐT phải là 10 số',
+            'phone.required' => 'SĐT phải là 10 số',
+            'phone.regex' => 'SĐT không hợp lệ',
             'role_id.required' => 'Phải cấp quyền'
         ])->validate();
 

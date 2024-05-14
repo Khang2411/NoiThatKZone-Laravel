@@ -40,8 +40,9 @@ const handleChangeThumbnail = (e) => {
 
 const submit = () => {
     form.post(route('admin.banner.update'), {
+        preserveScroll: true,
         onSuccess: () => {
-            router.reload({ only: ['banners'] })
+            // router.reload({ only: ['banners'] })
             toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
             const targetEl = 'editUserModal';

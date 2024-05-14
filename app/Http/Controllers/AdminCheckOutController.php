@@ -16,8 +16,8 @@ class AdminCheckOutController extends Controller
     function execPostRequest($url, $data)
     {
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -131,7 +131,7 @@ class AdminCheckOutController extends Controller
             SendOrderMail::dispatch($order->user_id, $order, $localOrderEmail);
         }
         Cart::where('user_id', $order->user_id)->delete();
-        return redirect("http://localhost:3000/order-success?{$params}");
+        return redirect(env('CLIENT_APP_URL') . "/order-success?{$params}");
     }
 
     function vnpayCheckout()
@@ -224,6 +224,6 @@ class AdminCheckOutController extends Controller
             SendOrderMail::dispatch($order->user_id, $order, $localOrderEmail);
         }
         Cart::where('user_id', $order->user_id)->delete();
-        return redirect("http://localhost:3000/order-success?{$params}");
+        return redirect(env('CLIENT_APP_URL') . "/order-success?{$params}");
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCheckOutController;
+use App\Http\Controllers\Auth\NewPasswordController;
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Collection;
@@ -27,7 +28,7 @@ use App\Models\Slider;
 use App\Jobs\SendOrderMail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Auth\Events\PasswordReset;
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', function (Request $request) {
@@ -123,6 +124,34 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    Route::post('/reset-password', function (Request $request) {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+        if ($status == Password::PASSWORD_RESET) {
+            return true;
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
+    })->middleware('guest')->name('password.update');
+
     Route::get('/home/collections', function () {
         $collections = Collection::where('collection_id', '=', null)->with('collections')->get();
         return response()->json(['data' => $collections]);
@@ -144,7 +173,7 @@ Route::prefix('v1')->group(function () {
         if ($collection->collection_id) {
             $collection['collections'] =  $collection::find($collection->collection_id)->collections;
         }
-        return response()->json($collection);
+        return response()->json(['data' => $collection]);
     })->name('api-collection.byId');
 
     Route::get('/listings', function () {
@@ -190,7 +219,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/listings/{id}', function ($id) {
         $product = Product::find($id);
         $product->collection->rootCollection;
-        return response()->json($product);
+        return response()->json(['data' => $product]);
     })->name('api-product.byID');
 
     Route::get('listings/{id}/similar', function ($id) {
@@ -215,9 +244,18 @@ Route::prefix('v1')->group(function () {
     })->name('api-wards.byDistrictID');
 
     Route::get('/reviews', function () {
-        $reviews = Review::where('product_id', request()->product_id)
-            ->where('status', 'confirmed')->where('review_id', '=', null)
-            ->with('user', 'replies')->paginate(10);
+        if (!request()->rate) {
+            $reviews = Review::where('product_id', request()->product_id)
+                ->where('status', 'confirmed')
+                ->where('review_id', '=', null)
+                ->with('user', 'replies')->paginate(10);
+        } else {
+            $reviews = Review::where('product_id', request()->product_id)
+                ->where('status', 'confirmed')
+                ->where('review_id', '=', null)
+                ->where('rating', '=', request()->rate)
+                ->with('user', 'replies')->paginate(10);
+        }
         foreach ($reviews as $review) {
             foreach ($review['replies'] as $reply) {
                 $reply['user_name'] = User::find($reply['user_id'])->name;
@@ -423,7 +461,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/checkout/momo/return/{order}', [AdminCheckOutController::class, 'momoCheckoutReturn'])->name('api.checkout.momo.return');
 
     Route::post('/checkout', function () {
-      //  return 1;
+        //  return 1;
         $order = Order::create([
             'user_id' => request()->order['user_id'],
             'email' => request()->order['email'],

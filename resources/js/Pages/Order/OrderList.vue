@@ -16,16 +16,15 @@ moment.locale('vi')
 
 const props = defineProps({
     orders: Object,
-    list_action: Array,
+    list_action: Object,
     count: Array,
 })
-
 const page = ref(new URLSearchParams(window.location.search).get('page'))
 const queryParam = ref(new URLSearchParams(window.location.search).get('status'))
 const toastId = ref('');
 
 const form = useForm({
-    search: new URLSearchParams(window.location.search).get('search'),
+    search: new URLSearchParams(window.location.search).get('search') || '',
     id: '',
     email: '',
     method: '',
@@ -89,6 +88,7 @@ const handleRemove = (id) => {
     if (confirm("Bạn có muốn xóa?")) {
         router.post(route('admin.order.delete', id), {
         }, {
+            preserveScroll: true,
             onSuccess: () => {
                 router.reload({ only: ['orders,count'] })
                 toast.remove(toastId.value)
@@ -105,10 +105,12 @@ const submit = () => {
 </script>
 
 <template>
-
     <Head title="Danh sách đơn đặt hàng" />
     <AuthenticatedLayout>
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
+        <div>
+            <p class="mb-5 dark:text-white text-2xl">Đơn đặt hàng</p>
+        </div>
+        <div class="shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
                 class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
                 role="alert">
@@ -165,7 +167,8 @@ const submit = () => {
                         @keyup="handleSearch($event)" />
                 </div>
             </div>
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <div class="relative overflow-x-auto">
+                  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="p-4">
@@ -285,7 +288,9 @@ const submit = () => {
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table> 
+            </div>
+         
             <div class="mt-2 mb-2 px-2">
                 <Paginate :links="orders.links"></Paginate>
             </div>
@@ -378,7 +383,7 @@ const submit = () => {
                                             <td class="px-6 py-4 text-center">
                                                 {{ new Intl.NumberFormat('vi-VN', {
                 style: 'currency', currency:
-                                                'VND'
+                    'VND'
                                                 }).format(product.pivot.quantity * product.pivot.price) }}
                                             </td>
                                         </tr>

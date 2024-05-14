@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import Editor from '@tinymce/tinymce-vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
@@ -16,6 +16,26 @@ const props = defineProps({
 const back_to = ref(new URLSearchParams(window.location.search).get('back_to'))
 const previewThumbnailUrl = ref('')
 const toastId = ref('');
+const cloudinaryWidgetRef = ref(null)
+const inputImageTinymce = ref('')
+
+onMounted(() => {
+    var myWidget = cloudinary.createUploadWidget({
+        cloudName: 'dqsfwus9c',
+        uploadPreset: 'posts_noithatkzone',
+        folder: 'noithatkzone/posts',
+        clientAllowedFormats: ["image"],
+        multiple: false
+    }, (error, result) => {
+        if (!error && result && result.event === "success") {
+            console.log('Done! Here is the image info: ', result.info);
+            console.log(result.info.secure_url)
+            inputImageTinymce.value(result.info.secure_url);
+        }
+    }
+    )
+    cloudinaryWidgetRef.value = myWidget;
+})
 
 const form = useForm({
     id: props.post.id,
@@ -31,25 +51,15 @@ const handleChangeThumbnail = (e) => {
 }
 
 function filePicker(callback, value, meta) {
-    var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
-    var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-
-    var cmsURL = import.meta.env.VITE_SENTRY_DSN_PUBLIC + '/' + 'laravel-filemanager?editor=' + meta.fieldname;
-    if (meta.filetype == 'image') {
-        cmsURL = cmsURL + '&type=Images';
-    } else { cmsURL = cmsURL + '&type=Files'; }
-    tinyMCE.activeEditor.windowManager.openUrl({
-        url: cmsURL, title: 'Filemanager', width: x *
-            0.8, height: y * 0.8, resizable: 'yes', close_previous: 'no', onMessage: (api, message) => {
-                callback(message.content);
-            }
-    });
+    cloudinaryWidgetRef.value.open()
+    inputImageTinymce.value = callback
+    console.log(inputImageTinymce.value )
+    console.log(callback)
 }
 
 const submit = () => {
     form.post(route('admin.post.update'), {
         onSuccess: () => {
-            router.reload({ only: ['post'] })
             toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
         },
@@ -60,10 +70,11 @@ const submit = () => {
 </script>
 
 <template>
+
     <Head title="Cập nhật bài viết" />
     <AuthenticatedLayout>
         <div>
-            <p class="px-5 dark:text-white text-2xl">Cập nhật bài viết #{{props.post.id}}</p>
+            <p class="px-5 dark:text-white text-2xl">Cập nhật bài viết #{{ props.post.id }}</p>
         </div>
         <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
             <form @submit.prevent="submit" class="max-w-5xl mx-auto">
@@ -88,15 +99,15 @@ const submit = () => {
                     <InputLabel value="Nội dung bài viết" class="cursor-pointer mb-2" />
 
                     <Editor v-model="form.content" api-key="lndyux1kq5azq43ydw1r6vjsu3ogfzjkndo7xspczt5cnge0" :init="{
-                        height: '500',
-                        path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
-                            ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
-                                , 'searchreplace wordcount visualblocks visualchars code fullscreen'
-                                , 'insertdatetime media nonbreaking save table directionality'
-                                , 'emoticons template paste textpattern'],
-                        toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media'
-                        , file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
-                    }" />
+                height: '500',
+                path_absolute: '/', selector: 'textarea.my-editor', relative_urls: false, plugins:
+                    ['advlist autolink lists link image charmap print preview hr anchor pagebreak'
+                        , 'searchreplace wordcount visualblocks visualchars code fullscreen'
+                        , 'insertdatetime media nonbreaking save table directionality'
+                        , 'emoticons template paste textpattern'],
+                toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media'
+                , file_picker_callback: function (callback, value, meta) { filePicker(callback, value, meta) }
+            }" />
                     <InputError class="mt-2" :message="form.errors.describe" />
                 </div>
 

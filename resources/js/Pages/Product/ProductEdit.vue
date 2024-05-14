@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import Editor from '@tinymce/tinymce-vue';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { formatNumeral } from 'cleave-zen'
@@ -22,6 +22,26 @@ const previewDetailImage = ref(props.product.detail_images)
 const detailImages = ref([])
 const removeDetailImage = ref([])
 const toastId = ref('');
+const cloudinaryWidgetRef = ref(null)
+const inputImageTinymce = ref('')
+
+onMounted(() => {
+    var myWidget = cloudinary.createUploadWidget({
+        cloudName: 'dqsfwus9c',
+        uploadPreset: 'posts_noithatkzone',
+        folder: 'noithatkzone/posts',
+        clientAllowedFormats: ["image"],
+        multiple: false
+    }, (error, result) => {
+        if (!error && result && result.event === "success") {
+            console.log('Done! Here is the image info: ', result.info);
+            console.log(result.info.secure_url)
+            inputImageTinymce.value(result.info.secure_url);
+        }
+    }
+    )
+    cloudinaryWidgetRef.value = myWidget;
+})
 
 const form = useForm({
     id: props.product.id,
@@ -78,23 +98,11 @@ const handleRemoveImage = (url, index) => {
 
 
 function filePicker(callback, value, meta) {
-    var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
-    var y = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-
-    var cmsURL = import.meta.env.VITE_SENTRY_DSN_PUBLIC + '/' + 'laravel-filemanager?editor=' + meta.fieldname;
-    if (meta.filetype == 'image') {
-        cmsURL = cmsURL + '&type=Images';
-    } else { cmsURL = cmsURL + '&type=Files'; }
-    tinyMCE.activeEditor.windowManager.openUrl({
-        url: cmsURL, title: 'Filemanager', width: x *
-            0.8, height: y * 0.8, resizable: 'yes', close_previous: 'no', onMessage: (api, message) => {
-                callback(message.content);
-            }
-    });
+    cloudinaryWidgetRef.value.open()
+    inputImageTinymce.value = callback
 }
 
 const submit = () => {
-    console.log('start 123')
     console.log(form)
     form.defaults({
         ...form,

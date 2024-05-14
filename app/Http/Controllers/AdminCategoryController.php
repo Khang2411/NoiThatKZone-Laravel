@@ -12,6 +12,9 @@ use Cloudinary\Api\Upload\UploadApi;
 
 class AdminCategoryController extends Controller
 {
+    function test(){
+        (new UploadApi())->destroy('regegheiorhgoihgirtio');
+    }
     function list()
     {
         $list_action = ['delete' => 'Xóa tạm thời'];

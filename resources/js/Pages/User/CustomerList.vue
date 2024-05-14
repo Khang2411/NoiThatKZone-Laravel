@@ -15,7 +15,7 @@ import 'vue3-toastify/dist/index.css';
 const props = defineProps({
     users: Object,
     roles: Object,
-    list_action: Array,
+    list_action: Object,
     count: Array,
 })
 
@@ -31,7 +31,7 @@ const form = useForm({
     role_id: '',
     phone: '',
     list_check: [],
-    search: new URLSearchParams(window.location.search).get('search'),
+    search: new URLSearchParams(window.location.search).get('search') || '',
     all_selected: false
 });
 
@@ -91,8 +91,8 @@ const handleRemove = (id) => {
 
 const submit = () => {
     form.post(route('admin.customer.update'), {
+        preserveScroll: true,
         onSuccess: () => {
-            router.reload({ only: ['users'] })
             toast.remove(toastId.value)
             toast.success('Cập nhật thành công!');
             const targetEl = 'editUserModal';
@@ -110,6 +110,9 @@ const submit = () => {
 
     <Head title="Danh sách khách hàng" />
     <AuthenticatedLayout>
+        <div>
+            <p class="mb-5 dark:text-white text-2xl">Khách hàng</p>
+        </div>
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
                 class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"

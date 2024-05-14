@@ -10,6 +10,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,10 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ResetPassword::createUrlUsing(function (User $user, string $token) {
+        //     return env("CLIENT_APP_URL") . '/reset-password?token=' . $token;
+        // });
+
         $permissions = Permission::all();
         foreach ($permissions as $permission) {
             Gate::define($permission->slug, function (User $user) use ($permission) {

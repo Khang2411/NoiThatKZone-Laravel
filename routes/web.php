@@ -20,8 +20,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Cloudinary\Configuration\Configuration;
 
-
+Configuration::instance('cloudinary://892774692195329:XMDRLriA45tFiLsegzoMwCrlTok@dqsfwus9c');
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -32,7 +33,7 @@ use Inertia\Inertia;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+Route::get('test', [AdminCategoryController::class, 'test']);
 Route::get('/', function () {
     return Inertia::render('Auth/Login', [
         'canLogin' => Route::has('login'),

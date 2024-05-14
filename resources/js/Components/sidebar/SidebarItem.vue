@@ -136,7 +136,8 @@ import { Link } from '@inertiajs/vue3';
                     <li>
                         <Link :href="route('admin.category.list')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                        Danh sách thể loại</Link>
+                        Danh sách thể loại
+                        </Link>
                     </li>
                 </ul>
             </li>
@@ -256,7 +257,7 @@ import { Link } from '@inertiajs/vue3';
                     </svg>
                 </button>
                 <ul id="dropdown-user" class="py-2 space-y-2"
-                    :class="{ 'hidden': !$page.url.startsWith('/admin/user') || !$page.url.startsWith('/admin/customer') }">
+                    :class="{ hidden: !$page.url.startsWith('/admin/customer') && !$page.url.startsWith('/admin/user')}">
                     <li>
                         <Link :href="route('admin.user.add.view')"
                             class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
@@ -293,7 +294,7 @@ import { Link } from '@inertiajs/vue3';
                             d="m1 1 4 4 4-4" />
                     </svg>
                 </button>
-                <ul id="dropdown-permission" class="hidden py-2 space-y-2"
+                <ul id="dropdown-permission" class="py-2 space-y-2"
                     :class="{ 'hidden': !$page.url.startsWith('/admin/role') }">
                     <li>
                         <Link :href="route('admin.role.add.view')"

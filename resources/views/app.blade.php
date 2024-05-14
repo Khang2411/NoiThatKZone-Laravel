@@ -19,6 +19,7 @@
             document.documentElement.classList.remove('dark')
         }
     </script>
+    
     @routes
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
@@ -26,6 +27,7 @@
 
 <body class="font-sans antialiased">
     @inertia
+    <script src="https://upload-widget.cloudinary.com/latest/global/all.js" type="text/javascript"></script>
 </body>
 
 </html>
