@@ -70,7 +70,6 @@ const handleAction = (action) => {
         list_check: form.list_check
     }, {
         onSuccess: () => {
-            router.reload({ only: ['users,count'] })
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
@@ -84,7 +83,6 @@ const handleRemove = (id) => {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                router.reload({ only: ['users,count'] })
                 toast.remove(toastId.value)
                 toast.success('Xóa thành công!');
             },
@@ -116,7 +114,7 @@ const submit = () => {
         <div>
             <p class="mb-5 dark:text-white text-2xl">Thành viên</p>
         </div>
-        <div class="shadow-md sm:rounded-lg flex-1">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
                 class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
                 role="alert">

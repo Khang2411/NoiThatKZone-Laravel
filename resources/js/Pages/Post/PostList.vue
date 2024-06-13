@@ -42,13 +42,11 @@ const handleSelectAll = () => {
 }
 
 const handleAction = (action) => {
-    console.log(action)
     router.post(route('admin.post.action'), {
         action: action,
         list_check: form.list_check
     }, {
         onSuccess: () => {
-            router.reload({ only: ['posts,count'] })
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
@@ -62,7 +60,6 @@ const handleRemove = (id) => {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                router.reload({ only: ['posts,count'] })
                 toast.remove(toastId.value)
                 toast.success('Xóa thành công!');
             },
@@ -84,7 +81,7 @@ const handleSearch = debounce((e) => {
             <div>
                 <p class="mb-5 dark:text-white text-2xl">Tin tức</p>
             </div>
-            <div class="shadow-md sm:rounded-lg flex-1">
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
                 <div v-if="$page.props.flash.status"
                     class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
                     role="alert">

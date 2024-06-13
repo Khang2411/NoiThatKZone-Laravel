@@ -69,7 +69,6 @@ const handleAction = (action) => {
         list_check: form.list_check
     }, {
         onSuccess: () => {
-            router.reload({ only: ['reviews,count'] })
             toast.remove(toastId.value)
             toast.success('Thao tác thành công!');
         },
@@ -83,7 +82,6 @@ const handleRemove = (id) => {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                router.reload({ only: ['reviews,count'] })
                 toast.remove(toastId.value)
                 toast.success('Xóa thành công!');
             },
@@ -96,7 +94,6 @@ const submit = () => {
     form.post(route('admin.review.update'), {
         preserveScroll: true,
         onSuccess: () => {
-            router.reload({ only: ['reviews'] })
             toast.success('Cập nhật thành công!');
             const targetEl = 'editUserModal';
             var currentModalObj = FlowbiteInstances.getInstance('Modal', targetEl);
@@ -116,7 +113,7 @@ const submit = () => {
         <div>
             <p class="mb-5 dark:text-white text-2xl">Đánh giá</p>
         </div>
-        <div class="shadow-md sm:rounded-lg flex-1">
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
             <div v-if="$page.props.flash.status"
                 class="p-4 mb-4 text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300"
                 role="alert">
