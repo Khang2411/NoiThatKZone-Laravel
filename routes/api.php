@@ -29,6 +29,7 @@ use App\Jobs\SendOrderMail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', function (Request $request) {
@@ -434,7 +435,6 @@ Route::prefix('v1')->group(function () {
             );
         }
     })->name('api-cart-add');
-
 
     Route::post('/cart/coupon', function () {
         $total = request()->total;

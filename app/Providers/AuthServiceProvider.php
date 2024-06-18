@@ -28,9 +28,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ResetPassword::createUrlUsing(function (User $user, string $token) {
-        //     return env("CLIENT_APP_URL") . '/reset-password?token=' . $token;
-        // });
+        ResetPassword::createUrlUsing(function (User $user, string $token) {
+            if (!$user->role_id) {
+                return env("CLIENT_APP_URL") . '/reset-password?token=' . $token . "&email=" . urlencode($user->email);
+            } else {
+                return env("APP_URL") . "/reset-password/$token" . "?email=" . urlencode($user->email);
+            }
+        });
 
         $permissions = Permission::all();
         foreach ($permissions as $permission) {
