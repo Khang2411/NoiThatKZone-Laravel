@@ -17,11 +17,14 @@ onMounted(() => {
 
     if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         themeToggleLightIcon.classList.remove('hidden');
+        document.documentElement.classList.add('dark');
     } else {
         console.log(themeToggleDarkIcon)
         themeToggleDarkIcon.classList.remove('hidden');
+        document.documentElement.classList.add('light');
     }
 })
+
 
 const toggleTheme = () => {
     var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
